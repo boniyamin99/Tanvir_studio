@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login - Tanvir Studio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Reusing custom styles from admin-panel.html for consistency */
+        :root {
+            --bg-primary: #f4f7fc; --bg-secondary: #ffffff; --border-color: #e2e8f0;
+            --text-primary: #1e293b; --text-secondary: #64748b; --accent-color: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.3); --danger-color: #dc2626;
+            --success-color: #16a34a; --warning-color: #f59e0b;
+        }
+        .dark {
+            --bg-primary: #0D1117; --bg-secondary: #161B22; --border-color: #30363d;
+            --text-primary: #c9d1d9; --text-secondary: #8b949e; --accent-color: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.3); --danger-color: #f85149;
+            --success-color: #3fb950; --warning-color: #d29922;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s, color 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        .login-card {
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 1rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 400px;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .dark .login-card {
+             box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+        }
+        .input-field {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            border-radius: 0.5rem;
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-primary:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 5px 15px var(--accent-glow);
+        }
+        .btn-primary:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .error-message {
+            color: var(--danger-color);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        .theme-toggle {
+            position: absolute;
+            top: 1.5rem;
+            right: 1.5rem;
+            padding: 0.5rem;
+            border-radius: 50%;
+            background-color: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-secondary);
+        }
+        .theme-toggle:hover {
+            color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-primary text-primary">
+
+    <button id="theme-toggle" class="theme-toggle">
+        <i id="theme-icon" class="fas fa-moon text-xl"></i>
+    </button>
+
+    <div class="login-card">
+        <div class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold accent-text mb-2 flex items-center justify-center">
+                <i class="fas fa-satellite-dish mr-3"></i>Tanvir Studio
+            </h1>
+            <p class="text-lg text-text-secondary">Admin Panel Login</p>
+        </div>
+
+        <form id="adminLoginForm" class="space-y-6">
+            <div>
+                <label for="username" class="block text-sm font-medium text-text-secondary mb-2">Username</label>
+                <input type="text" id="username" name="username" class="input-field" placeholder="Enter your username" required autocomplete="username">
+            </div>
+            <div>
+                <label for="password" class="block text-sm font-medium text-text-secondary mb-2">Password</label>
+                <input type="password" id="password" name="password" class="input-field" placeholder="Enter your password" required autocomplete="current-password">
+                <p id="errorMessage" class="error-message hidden"></p>
+            </div>
+            <div>
+                <button type="submit" id="loginButton" class="btn-primary">
+                    <i class="fas fa-sign-in-alt mr-2"></i> Login
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script type="module">
+        // Import your API utility (assuming it's in a 'utils' folder relative to this file's future location)
+        // If this login.html is in the same directory as index.html, and utils is a sibling, adjust path.
+        // For example, if login.html is in 'public/' and utils is in 'public/js/utils/', path might be './js/utils/api.js'
+        // Let's assume login.html is at the root level, and utils is at the root level too for now.
+        import { api } from './utils/api.js'; 
+
+        // --- THEME TOGGLE SCRIPT (Copied from index.html for consistency) ---
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const htmlEl = document.documentElement;
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        htmlEl.classList.toggle('dark', savedTheme === 'dark');
+        themeIcon.classList.toggle('fa-sun', savedTheme === 'dark');
+        themeIcon.classList.toggle('fa-moon', savedTheme === 'light');
+
+        themeToggle.addEventListener('click', () => {
+            const isDark = htmlEl.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            themeIcon.classList.toggle('fa-sun', isDark);
+            themeIcon.classList.toggle('fa-moon', !isDark);
+        });
+
+        // --- ADMIN LOGIN LOGIC ---
+        const adminLoginForm = document.getElementById('adminLoginForm');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const loginButton = document.getElementById('loginButton');
+        const errorMessage = document.getElementById('errorMessage');
+
+        // Check if already logged in (e.g., if authToken exists)
+        // If so, redirect to admin panel immediately
+        if (localStorage.getItem('authToken')) {
+            window.location.href = './admin-panel.html'; // Redirect to admin panel
+        }
+
+        adminLoginForm.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Prevent default form submission
+
+            loginButton.disabled = true;
+            loginButton.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> Logging In...';
+            errorMessage.classList.add('hidden'); // Hide any previous error message
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            try {
+                // Call the login API endpoint using your api utility
+                const response = await api.post('/auth/login', { username, password });
+
+                if (response.user && response.user.token) {
+                    // Check if the logged-in user has an admin-level role
+                    const allowedAdminRoles = ['admin', 'manager', 'accountant', 'employee', 'editor']; 
+                    if (allowedAdminRoles.includes(response.user.role)) {
+                        localStorage.setItem('authToken', response.user.token); // Store the token
+                        // Optionally store user role/info as well if needed for frontend logic
+                        localStorage.setItem('userRole', response.user.role); 
+                        localStorage.setItem('userId', response.user.id);
+                        
+                        // Redirect to the admin panel
+                        window.location.href = './admin-panel.html';
+                    } else {
+                        errorMessage.textContent = 'You do not have administrative access.';
+                        errorMessage.classList.remove('hidden');
+                        localStorage.removeItem('authToken'); // Clear token if not authorized
+                    }
+                } else {
+                    errorMessage.textContent = response.message || 'Login failed. Please check credentials.';
+                    errorMessage.classList.remove('hidden');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                // Handle specific error messages from backend (e.g., "Invalid credentials")
+                errorMessage.textContent = error.message || 'An unexpected error occurred. Please try again.';
+                errorMessage.classList.remove('hidden');
+            } finally {
+                loginButton.disabled = false;
+                loginButton.innerHTML = '<i class="fas fa-sign-in-alt mr-2"></i> Login';
+            }
+        });
+    </script>
+</body>
+</html>

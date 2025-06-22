@@ -1,0 +1,1554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tanvir Studio - Pro Admin Panel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+
+    <style>
+        :root {
+            --bg-primary: #f4f7fc; --bg-secondary: #ffffff; --border-color: #e2e8f0;
+            --text-primary: #1e293b; --text-secondary: #64748b; --accent-color: #2563eb;
+            --accent-glow: rgba(37, 99, 235, 0.3); --danger-color: #dc2626;
+            --success-color: #16a34a; --warning-color: #f59e0b;
+        }
+        .dark {
+            --bg-primary: #0D1117; --bg-secondary: #161B22; --border-color: #30363d;
+            --text-primary: #c9d1d9; --text-secondary: #8b949e; --accent-color: #58a6ff;
+            --accent-glow: rgba(88, 166, 255, 0.3); --danger-color: #f85149;
+            --success-color: #3fb950; --warning-color: #d29922;
+        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-primary); color: var(--text-primary); transition: background-color 0.3s, color 0.3s; }
+        .sidebar { background-color: var(--bg-secondary); border-right: 1px solid var(--border-color); }
+        .sidebar-link { display: flex; align-items: center; padding: 0.75rem 1rem; border-radius: 0.5rem; font-weight: 500; color: var(--text-secondary); transition: all 0.2s; }
+        .sidebar-link:hover { background-color: var(--accent-color); color: white; }
+        .sidebar-link.active { background-color: var(--accent-color); color: white; font-weight: 600; box-shadow: 0 0 15px var(--accent-glow); }
+        .header { background-color: var(--bg-secondary); border-bottom: 1px solid var(--border-color); }
+        .page-content { animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .card { background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 0.75rem; }
+        .stat-card { border-left: 4px solid var(--accent-color); }
+        .btn { padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 600; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; }
+        .btn:disabled { background-color: #64748b !important; cursor: not-allowed; opacity: 0.7; }
+        .btn-primary { background-color: var(--accent-color); color: #fff; }
+        .btn-primary:hover:not(:disabled) { filter: brightness(1.1); box-shadow: 0 0 10px var(--accent-glow); }
+        .btn-success { background-color: var(--success-color); color: #fff; }
+        .btn-success:hover:not(:disabled) { filter: brightness(1.1); }
+        .btn-secondary { background-color: var(--bg-primary); color: var(--text-primary); border: 1px solid var(--border-color); }
+        .btn-secondary:hover:not(:disabled) { background-color: var(--border-color); }
+        .input-field { background-color: var(--bg-primary); border: 1px solid var(--border-color); color: var(--text-primary); border-radius: 0.375rem; width: 100%; padding: 0.5rem 0.75rem; }
+        .input-field:focus { outline: none; border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--accent-glow); }
+        .kanban-column { background-color: var(--bg-primary); }
+        .kanban-card { background-color: var(--bg-secondary); border-left: 4px solid; cursor: grab; transition: box-shadow 0.2s, border-color 0.3s; }
+        .kanban-card.nearest-delivery { border-left-color: var(--accent-color) !important; box-shadow: 0 0 15px var(--accent-glow); }
+        .kanban-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .dark .kanban-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        .kanban-card:active { cursor: grabbing; }
+        .modal-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.5); z-index: 50; display: flex; align-items: center; justify-content: center; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+        .modal-backdrop.visible { opacity: 1; visibility: visible; }
+        .modal-content { background-color: var(--bg-secondary); padding: 1.5rem; border-radius: 0.75rem; max-width: 500px; width: 95%; transform: scale(0.95); transition: transform 0.3s; }
+        .modal-backdrop.visible .modal-content { transform: scale(1); }
+        .toast { position: fixed; top: 20px; right: 20px; background-color: var(--success-color); color: white; padding: 1rem 1.5rem; border-radius: 0.5rem; z-index: 100; opacity: 0; transform: translateY(-20px); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+        .toast.show { opacity: 1; transform: translateY(0); }
+        .sortable-ghost { opacity: 0.4; background: var(--accent-glow); }
+        .sortable-drag { opacity: 1 !important; }
+        .todo-step { display: flex; align-items: center; position: relative; padding: 0.25rem 0; }
+        .todo-step:not(:last-child)::after { content: ''; position: absolute; left: 1rem; top: 2.5rem; height: calc(100% - 1.5rem); width: 2px; background-color: var(--border-color); }
+        .todo-circle { border: 2px solid var(--border-color); transition: all 0.2s; }
+        .todo-step.completed .todo-circle { background-color: var(--success-color); border-color: var(--success-color); color: white; }
+        .todo-step.active .todo-circle { background-color: var(--accent-color); border-color: var(--accent-color); color: white; }
+        .todo-step.active .todo-label { color: var(--text-primary); font-weight: 600; }
+        .todo-step .todo-label { transition: all 0.2s; }
+        .todo-step.completed .todo-label { text-decoration: line-through; color: var(--text-secondary); }
+        .quick-view-card { transition: all 0.2s ease-in-out; cursor: pointer; }
+        .quick-view-card:hover { transform: translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
+        .dark .quick-view-card:hover { box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+        .skeleton { animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite; background-color: var(--border-color); border-radius: 0.25rem;}
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+
+        /* Additional styles for new sections/elements */
+        .grid-half { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+        .chat-container { display: flex; flex-direction: column; height: calc(100% - 2rem); max-height: 500px; border: 1px solid var(--border-color); border-radius: 0.5rem; overflow: hidden; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 1rem; background-color: var(--bg-primary); }
+        .chat-input-area { display: flex; padding: 1rem; border-top: 1px solid var(--border-color); background-color: var(--bg-secondary); }
+        .chat-message { max-width: 80%; padding: 0.5rem 0.75rem; border-radius: 0.75rem; margin-bottom: 0.5rem; }
+        .chat-message.sent { background-color: var(--accent-color); color: white; align-self: flex-end; margin-left: auto; }
+        .chat-message.received { background-color: var(--border-color); color: var(--text-primary); align-self: flex-start; margin-right: auto; }
+        .chat-list-item { padding: 0.75rem; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background-color 0.2s; }
+        .chat-list-item:hover { background-color: var(--bg-primary); }
+        .chat-list-item.active { background-color: var(--accent-color); color: white; }
+        .chat-list-item.active .text-text-secondary { color: rgba(255,255,255,0.8); }
+
+        .form-grid-2-col { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; }
+        .file-upload-card { border: 2px dashed var(--border-color); padding: 2rem; text-align: center; border-radius: 0.75rem; cursor: pointer; transition: border-color 0.2s; }
+        .file-upload-card:hover { border-color: var(--accent-color); }
+        .file-list { list-style: none; padding: 0; }
+        .file-list li { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px dashed var(--border-color); }
+        .file-list li:last-child { border-bottom: none; }
+        .file-list i { margin-right: 0.5rem; color: var(--accent-color); }
+
+        .progress-bar { height: 8px; background-color: var(--border-color); border-radius: 4px; overflow: hidden; }
+        .progress-fill { height: 100%; background-color: var(--success-color); border-radius: 4px; transition: width 0.3s ease-in-out; }
+
+    </style>
+</head>
+<body class="flex h-screen">
+    
+    <div id="loading-overlay" class="fixed inset-0 bg-bg-primary z-[100] flex flex-col items-center justify-center space-y-4">
+        <i class="fas fa-satellite-dish text-accent-color text-5xl animate-pulse"></i>
+        <p class="text-text-secondary">Initializing Tanvir Studio Panel...</p>
+    </div>
+
+    <div id="app-container" class="flex w-full h-full hidden">
+        <aside class="sidebar w-64 flex flex-col p-4 space-y-2 flex-shrink-0">
+             <div class="text-center py-4 mb-4">
+                 <h1 class="text-2xl font-bold text-text-primary flex items-center justify-center"><i class="fas fa-satellite-dish text-accent-color mr-2"></i>Tanvir Studio</h1>
+                 <p class="text-sm text-text-secondary">Pro Admin Panel</p>
+             </div>
+             <nav id="sidebar-nav" class="flex-grow">
+                 <a href="#dashboard" class="sidebar-link"><i class="fas fa-tachometer-alt w-6 mr-3"></i><span>Dashboard</span></a>
+                 <a href="#bookings" class="sidebar-link"><i class="fas fa-calendar-check w-6 mr-3"></i><span>Bookings</span></a>
+                 <a href="#payments" class="sidebar-link"><i class="fas fa-receipt w-6 mr-3"></i><span>Payments</span></a>
+                 <a href="#expenses" class="sidebar-link"><i class="fas fa-file-invoice-dollar w-6 mr-3"></i><span>Expenses</span></a>
+                 <a href="#salaries" class="sidebar-link"><i class="fas fa-money-bill-wave w-6 mr-3"></i><span>Salaries</span></a>
+                 <a href="#users" class="sidebar-link"><i class="fas fa-user-shield w-6 mr-3"></i><span>Users</span></a>
+                 <div class="border-t border-border-color my-2 pt-2"></div>
+                 <a href="#delivery" class="sidebar-link"><i class="fas fa-truck w-6 mr-3"></i><span>Deliveries</span></a>
+                 <a href="#cms" class="sidebar-link"><i class="fas fa-pencil-alt w-6 mr-3"></i><span>CMS</span></a>
+                 <a href="#surveys" class="sidebar-link"><i class="fas fa-poll w-6 mr-3"></i><span>Surveys</span></a>
+                 <a href="#logs" class="sidebar-link"><i class="fas fa-clipboard-list w-6 mr-3"></i><span>Logs</span></a>
+             </nav>
+            
+             <div class="mt-4 pt-4 border-t border-border-color">
+                 <h4 class="px-4 mb-2 text-sm font-semibold text-text-secondary uppercase tracking-wider">Action Items</h4>
+                 <div id="todo-sidebar-list" class="space-y-1"></div>
+             </div>
+
+             <div class="pt-4 mt-auto border-t border-border-color space-y-2">
+                  <div id="user-profile" class="p-2 rounded-lg">
+                      <div class="flex items-center">
+                          <img id="user-avatar" src="https://placehold.co/40x40/2563eb/ffffff?text=A" alt="Admin" class="w-10 h-10 rounded-full">
+                          <div class="ml-3">
+                              <p id="user-name" class="font-semibold text-sm text-text-primary">Admin User</p>
+                              <p id="user-id-sidebar" class="text-xs text-text-secondary break-all" title="User ID"></p>
+                          </div>
+                      </div>
+                  </div>
+                 <button id="theme-toggle" class="sidebar-link w-full"><i class="fas fa-moon w-6 mr-3"></i><span id="theme-label">Dark Mode</span></button>
+                 <button id="admin-logout-btn" class="sidebar-link w-full text-danger-color hover:!bg-danger-color/10 hover:!text-danger-color"><i class="fas fa-sign-out-alt w-6 mr-3"></i><span>Logout</span></button>
+             </div>
+        </aside>
+
+        <div class="flex-1 flex flex-col overflow-y-auto">
+            <header class="header p-4 flex justify-between items-center sticky top-0 z-10">
+                <h2 id="page-title" class="text-xl font-bold text-text-primary"></h2>
+                <button id="add-booking-btn-header" class="btn btn-primary text-sm"><i class="fas fa-plus mr-2"></i>Add Booking</button>
+            </header>
+
+            <main id="main-content" class="p-6 md:p-8">
+                </main>
+        </div>
+    </div>
+    
+    <div id="booking-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 id="booking-modal-title" class="text-lg font-bold mb-4">Add New Booking</h3>
+            <form id="booking-form" class="space-y-4">
+                <input type="hidden" name="id">
+                <div><label class="text-sm font-medium">Customer Name</label><input name="customer" type="text" class="input-field mt-1" required></div>
+                <div><label class="text-sm font-medium">Customer Phone</label><input name="customerPhone" type="tel" placeholder="e.g., 88017..." class="input-field mt-1"></div>
+                <div><label class="text-sm font-medium">Package</label><select name="package" class="input-field mt-1" required><option>Basic</option><option>Standard</option><option>Premium</option></select></div>
+                <div><label class="text-sm font-medium">Total Price (BDT)</label><input name="totalPrice" type="number" class="input-field mt-1" required></div>
+                <div><label class="text-sm font-medium">Paid Amount (BDT)</label><input name="paidAmount" type="number" class="input-field mt-1" required></div>
+                <div><label class="text-sm font-medium">Booking Date</label><input name="date" type="date" class="input-field mt-1" required></div>
+                <div><label class="text-sm font-medium">Delivery Date</label><input name="deliveryDate" type="date" class="input-field mt-1"></div>
+                <div><label class="text-sm font-medium">Google Drive Link</label><input name="googleDriveLink" type="url" placeholder="https://drive.google.com/..." class="input-field mt-1"></div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Booking</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="quick-view-modal" class="modal-backdrop">
+        <div class="modal-content !max-w-3xl">
+            <div class="flex justify-between items-center mb-4 pb-4 border-b border-border-color">
+                <h3 id="quick-view-modal-title" class="text-lg font-bold"></h3>
+                <button class="text-text-secondary hover:text-text-primary" data-action="close-modal"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div id="quick-view-modal-content" class="max-h-[70vh] overflow-y-auto space-y-3"></div>
+        </div>
+    </div>
+
+    <div id="file-upload-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <h3 class="text-lg font-bold mb-4">Upload Project File</h3>
+            <form id="upload-file-form" class="space-y-4">
+                <input type="hidden" name="bookingId">
+                <div>
+                    <label class="text-sm font-medium">Select File</label>
+                    <input type="file" name="projectFile" class="input-field mt-1" required>
+                </div>
+                <div>
+                    <label class="text-sm font-medium">File Type</label>
+                    <select name="fileType" class="input-field mt-1" required>
+                        <option value="studio">Studio Internal File</option>
+                        <option value="client">Client Provided File</option>
+                        <option value="final_delivery">Final Delivery File</option>
+                    </select>
+                </div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Upload File</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="cms-modal" class="modal-backdrop">
+        <div class="modal-content !max-w-xl">
+            <h3 class="text-lg font-bold mb-4">Edit Content</h3>
+            <form id="cms-edit-form" class="space-y-4">
+                <input type="hidden" name="contentId">
+                <div><label class="text-sm font-medium">Section</label><input type="text" name="section" class="input-field mt-1" readonly></div>
+                <div><label class="text-sm font-medium">Key</label><input type="text" name="key" class="input-field mt-1" readonly></div>
+                <div><label class="text-sm font-medium">Content (Text)</label><textarea name="value" class="input-field mt-1" rows="5"></textarea></div>
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" class="btn btn-secondary" data-action="close-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Content</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <div id="toast-notification" class="toast"></div>
+
+    <script type="module">
+        // --- AUTHENTICATION CHECK: Redirect to login page if no token ---
+        const authToken = localStorage.getItem('authToken');
+        // You might want to add a backend validation call here for production to ensure token is valid
+        if (!authToken) {
+            window.location.href = './login.html'; // Redirect to your admin login page
+        }
+        // --- END AUTHENTICATION CHECK ---
+
+        // Assume your Node.js backend is running on this URL
+        const BACKEND_API_URL = 'http://localhost:3000/api'; // Change if your backend is on a different port/domain
+
+        /**
+         * Main application class for the Tanvir Studio Admin Panel.
+         * Manages state, API connections, UI rendering, and event listeners.
+         */
+        class StudioAdminApp {
+            constructor() {
+                this.userId = localStorage.getItem('userId') || 'admin_user_1'; // Get user ID from localStorage
+                this.userRole = localStorage.getItem('userRole') || 'admin'; // Get user role from localStorage
+                // Centralized state for the application
+                this.state = { 
+                    bookings: [], 
+                    oneTimeExpenses: [], 
+                    recurringExpenses: [], 
+                    users: [],
+                    deliveries: [], 
+                    cmsContent: [], 
+                    surveyResponses: [], 
+                    activityLogs: [], 
+                };
+                this.TODO_STEPS = ['Recording', 'Waiting for Humming', 'Organizing Project', 'Composition Required', 'Mixing & Mastering', 'Completed'];
+                this.chartInstances = { incomeExpenseChart: null, packageChart: null, expenseCategoryChart: null, revenueByMonthChart: null }; // Updated chart instances
+                this.router = new Router(this);
+                
+                // Initialize default filter values for completed bookings on Kanban
+                const today = new Date();
+                this.state.completedFilterMonth = today.getMonth();
+                this.state.completedFilterYear = today.getFullYear();
+
+                this.initApp();
+            }
+
+            /**
+             * Finalizes app setup once basic properties are set.
+             */
+            initApp() {
+                this.fetchInitialData(); // Fetch data via API or use mock data
+                this.setupUIEventListeners();
+                this.applyTheme(localStorage.getItem('theme') || 'light');
+                document.getElementById('user-id-sidebar').textContent = this.userId;
+                document.getElementById('user-name').textContent = `${this.userRole.charAt(0).toUpperCase() + this.userRole.slice(1)} User`; // Display role based name
+                document.getElementById('loading-overlay').classList.add('hidden');
+                document.getElementById('app-container').classList.remove('hidden');
+                this.router.handleRouteChange(); // Navigate to the correct initial page
+            }
+            
+            /**
+             * Fetches initial data from the Node.js backend or uses mock data if backend is unavailable.
+             */
+            async fetchInitialData() {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+
+                // Mock Data for all sections - will be used if API calls fail
+                const mockBookings = [
+                    { id: 'b1', customer: 'Abu Rayhan', customerPhone: '8801712345678', package: 'Basic', totalPrice: 3000, paidAmount: 1000, status: 'pending', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05`, deliveryDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-20`, googleDriveLink: '', todo: [] },
+                    { id: 'b2', customer: 'Hossain Adnan', customerPhone: '8801812345678', package: 'Premium', totalPrice: 10000, paidAmount: 10000, status: 'progress', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-02`, deliveryDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-18`, googleDriveLink: '', todo: [ { name: 'Recording', completed: true }, { name: 'Waiting for Humming', completed: true }, { name: 'Organizing Project', completed: false }, { name: 'Composition Required', completed: false }, { name: 'Mixing & Mastering', completed: false }, { name: 'Completed', completed: false } ] },
+                    { id: 'b3', customer: 'Jubayer Ahmad', customerPhone: '8801912345678', package: 'Standard', totalPrice: 6000, paidAmount: 6000, status: 'completed', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-08`, deliveryDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-15`, googleDriveLink: 'https://docs.google.com/document/d/example', todo: this.TODO_STEPS.map(name => ({name, completed: true})) },
+                    { id: 'b4', customer: 'Anika Tabassum', customerPhone: '8801512345678', package: 'Basic', totalPrice: 3000, paidAmount: 1500, status: 'progress', date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-15`, deliveryDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-25`, googleDriveLink: '', todo: [ { name: 'Recording', completed: true }, { name: 'Waiting for Humming', completed: false }, { name: 'Organizing Project', completed: false }, { name: 'Composition Required', completed: false }, { name: 'Mixing & Mastering', completed: false }, { name: 'Completed', completed: false } ] },
+                    { id: 'b5', customer: 'Abdullah Sadik', customerPhone: '8801731271306', package: 'Standard', totalPrice: 5000, paidAmount: 2000, status: 'pending', date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-14`, deliveryDate: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-30`, googleDriveLink: '', todo: [] },
+                    { id: 'b6', customer: 'Nusrat Jahan', customerPhone: '8801612345678', package: 'Basic', totalPrice: 3000, paidAmount: 3000, status: 'completed', date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-01`, deliveryDate: `${currentYear}-${String(currentMonth).padStart(2, '0')}-10`, googleDriveLink: 'https://docs.google.com/document/d/example2', todo: this.TODO_STEPS.map(name => ({name, completed: true})) }
+                ];
+                const mockOneTimeExpenses = [ 
+                    { id: 'e1', description: 'Social Media Ads', category: 'Marketing', amount: 4000, date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05` }, 
+                    { id: 'e2', description: 'Office Supplies', category: 'Other', amount: 1200, date: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-10`},
+                    { id: 'e3', description: 'Electricity Bill', category: 'Utilities', amount: 3500, date: `${currentYear}-${String(currentMonth).padStart(2, '0')}-28`}
+                ];
+                const mockRecurringExpenses = [ 
+                    { id: 'r1', item: 'Studio Rent', amount: 15000, dueDay: 1, lastPaidMonth: currentMonth - 1, lastPaidYear: currentYear }, 
+                    { id: 'r2', item: 'Wi-Fi Bill', amount: 1500, dueDay: 10, lastPaidMonth: currentMonth, lastPaidYear: currentYear }, 
+                    { id: 'r3', item: 'Utility Bill', amount: 3500, dueDay: 15, lastPaidMonth: currentMonth - 1, lastPaidYear: currentYear }, 
+                ];
+                const mockUsers = [ 
+                    { id: 'u1', name: 'Rakib Hasan', role: 'Manager', salary: 25000, email: 'rakib@example.com', phone: '01711223344', lastPaidMonth: currentMonth - 1, lastPaidYear: currentYear }, 
+                    { id: 'u2', name: 'Fatima Akter', role: 'Accountant', salary: 20000, email: 'fatima@example.com', phone: '01911223344', lastPaidMonth: currentMonth, lastPaidYear: currentYear },
+                    { id: 'u3', name: 'Imran Khan', role: 'Engineer', salary: 30000, email: 'imran@example.com', phone: '01611223344', lastPaidMonth: currentMonth, lastPaidYear: currentYear }
+                ];
+                const mockDeliveries = mockBookings.filter(b => b.status === 'completed'); // Deliveries are essentially completed bookings
+                const mockCmsContent = [
+                    { id: 'hero-title', section: 'Hero', key: 'Main Headline', value: 'Crafting Soulful Nasheeds for the Modern Age.' },
+                    { id: 'hero-subtitle', section: 'Hero', key: 'Sub-Headline', value: 'We merge professional production with spiritual artistry to create Nasheeds that resonate deeply and inspire globally.' },
+                    { id: 'about-us-main', section: 'About Us', key: 'Main Content', value: 'Established in 20XX, our professional music studio is dedicated to providing artists with a creative and inspiring environment. We combine cutting-edge technology with experienced engineers and producers to deliver exceptional audio quality for every project. From emerging talents to established artists, we are committed to helping you achieve your musical aspirations. Our team believes in collaboration, precision, and passion in every note. We offer a comfortable and acoustically treated space designed for optimal recording, mixing, and mastering. Come and experience the difference.' },
+                ];
+                const mockSurveyResponses = [
+                    { id: 'SUR001', bookingId: 'b3', rating: 5, feedback: 'Excellent service, very satisfied!', submittedAt: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-10` },
+                    { id: 'SUR002', bookingId: 'b6', rating: 4, feedback: 'Good quality, slight delay in delivery.', submittedAt: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-12` },
+                ];
+                const mockActivityLogs = [
+                    { id: 'LOG001', userId: 'admin_user_1', actionType: 'BOOKING_CREATED', details: 'New booking by Abu Rayhan', ipAddress: '192.168.1.1', timestamp: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05T10:30:00Z` },
+                    { id: 'LOG002', userId: 'admin_user_1', actionType: 'STATUS_UPDATED', details: 'Booking b2 status changed to progress', ipAddress: '192.168.1.1', timestamp: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-05T11:00:00Z` },
+                    { id: 'LOG003', userId: 'system', actionType: 'JOB_RUN', details: 'Monthly report generated', ipAddress: 'N/A', timestamp: `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-01T03:00:00Z` },
+                ];
+
+
+                try {
+                    // It's good practice to send the JWT token in authorization header for these protected calls
+                    const authHeader = { 'Authorization': `Bearer ${authToken}` };
+
+                    const [bookingsRes, expensesRes, recurringExpensesRes, usersRes, deliveriesRes, cmsRes, surveysRes, logsRes] = await Promise.allSettled([ // Use Promise.allSettled to handle individual failures gracefully
+                        fetch(`${BACKEND_API_URL}/bookings`, { headers: authHeader }),
+                        fetch(`${BACKEND_API_URL}/expenses`, { headers: authHeader }), // getAllExpenses endpoint
+                        fetch(`${BACKEND_API_URL}/expenses/recurring`, { headers: authHeader }), // Assuming a dedicated endpoint for recurring expenses
+                        fetch(`${BACKEND_API_URL}/employees`, { headers: authHeader }), // Changed from /users to /employees as per backend structure
+                        fetch(`${BACKEND_API_URL}/deliveries`, { headers: authHeader }), 
+                        fetch(`${BACKEND_API_URL}/cms`, { headers: authHeader }), // Assuming CMS content is managed via /cms route
+                        fetch(`${BACKEND_API_URL}/surveys`, { headers: authHeader }), 
+                        fetch(`${BACKEND_API_URL}/logs`, { headers: authHeader }) 
+                    ]);
+
+                    this.state.bookings = bookingsRes.status === 'fulfilled' && bookingsRes.value.ok ? await bookingsRes.value.json() : mockBookings;
+                    this.state.oneTimeExpenses = expensesRes.status === 'fulfilled' && expensesRes.value.ok ? await expensesRes.value.json() : mockOneTimeExpenses;
+                    this.state.recurringExpenses = recurringExpensesRes.status === 'fulfilled' && recurringExpensesRes.value.ok ? await recurringExpensesRes.value.json() : mockRecurringExpenses;
+                    this.state.users = usersRes.status === 'fulfilled' && usersRes.value.ok ? await usersRes.value.json() : mockUsers; // Should fetch employees and map to users
+                    this.state.deliveries = deliveriesRes.status === 'fulfilled' && deliveriesRes.value.ok ? await deliveriesRes.value.json() : mockDeliveries;
+                    this.state.cmsContent = cmsRes.status === 'fulfilled' && cmsRes.value.ok ? await cmsRes.value.json() : mockCmsContent;
+                    this.state.surveyResponses = surveysRes.status === 'fulfilled' && surveysRes.value.ok ? await surveysRes.value.json() : mockSurveyResponses;
+                    this.state.activityLogs = logsRes.status === 'fulfilled' && logsRes.value.ok ? await logsRes.value.json() : mockActivityLogs;
+
+                    // If any API call failed, inform the user about demo data usage
+                    const failedFetches = [bookingsRes, expensesRes, recurringExpensesRes, usersRes, deliveriesRes, cmsRes, surveysRes, logsRes].filter(res => res.status === 'rejected' || (res.status === 'fulfilled' && !res.value.ok));
+                    if (failedFetches.length > 0) {
+                        this.showToast('Backend data could not be fetched for some sections. Showing demo data.', 'warning');
+                        console.warn('One or more API calls failed, falling back to mock data:', failedFetches);
+                    } else {
+                        this.showToast('All data fetched successfully from backend!', 'success');
+                    }
+
+                    // After fetching data, re-render the current page to display it
+                    this.router.renderCurrentPage();
+                    this.renderTodoListSidebar(); // Update sidebar action items
+                } catch (error) { // This catch block handles errors from Promise.allSettled itself (e.g., severe network issues)
+                    console.error('Critical error during initial data fetch:', error);
+                    document.getElementById('loading-overlay').querySelector('p').textContent = 'Failed to load data. Please check backend connection. Showing demo data.';
+                    // Fallback to all mock data explicitly if Promise.allSettled fails entirely
+                    this.state.bookings = mockBookings;
+                    this.state.oneTimeExpenses = mockOneTimeExpenses;
+                    this.state.recurringExpenses = mockRecurringExpenses;
+                    this.state.users = mockUsers;
+                    this.state.deliveries = mockDeliveries;
+                    this.state.cmsContent = mockCmsContent;
+                    this.state.surveyResponses = mockSurveyResponses;
+                    this.state.activityLogs = mockActivityLogs;
+                    this.showToast('Critical network issue. Showing full demo data.', 'danger');
+                    this.router.renderCurrentPage();
+                    this.renderTodoListSidebar();
+                }
+            }
+
+
+            // --- UI RENDERING HELPERS ---
+
+            formatCurrency = (amount) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'BDT', minimumFractionDigits: 0 }).format(amount);
+            
+            showToast = (message, type = 'success') => {
+                const toast = document.getElementById('toast-notification');
+                toast.textContent = message;
+                toast.style.backgroundColor = `var(--${type}-color)`;
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            };
+
+            openModal = (id) => document.getElementById(id).classList.add('visible');
+            closeModal = (id) => document.getElementById(id).classList.remove('visible');
+
+            /**
+             * Renders the main statistics cards on the dashboard.
+             */
+            renderDashboardStats() {
+                const container = document.getElementById('stats-container');
+                if (!container) return;
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+
+                // Calculate stats based on the current month and year
+                const monthlyEarnings = this.state.bookings
+                    .filter(b => b.date && new Date(b.date).getMonth() === currentMonth && new Date(b.date).getFullYear() === currentYear)
+                    .reduce((sum, b) => sum + (b.paidAmount || 0), 0);
+
+                const monthlyExpenses = this.state.oneTimeExpenses
+                    .filter(e => e.date && new Date(e.date).getMonth() === currentMonth && new Date(e.date).getFullYear() === currentYear)
+                    .reduce((sum, e) => sum + (e.amount || 0), 0);
+                    
+                const pendingBookings = this.state.bookings.filter(b => b.status === 'pending').length;
+                
+                const completedThisMonth = this.state.bookings.filter(b => 
+                    b.status === 'completed' && b.deliveryDate && new Date(b.deliveryDate).getMonth() === currentMonth && new Date(b.deliveryDate).getFullYear() === currentYear
+                ).length;
+
+                container.innerHTML = `
+                    <div class="card p-6 stat-card" style="--accent-color: var(--accent-color);"><div><p class="text-sm font-semibold text-text-secondary uppercase">Monthly Earnings</p><p class="text-3xl font-bold text-text-primary mt-2">${this.formatCurrency(monthlyEarnings)}</p></div></div>
+                    <div class="card p-6 stat-card" style="--accent-color: var(--danger-color);"><div><p class="text-sm font-semibold text-text-secondary uppercase">Monthly Expenses</p><p class="text-3xl font-bold text-text-primary mt-2">${this.formatCurrency(monthlyExpenses)}</p></div></div>
+                    <div class="card p-6 stat-card" style="--accent-color: var(--warning-color);"><div><p class="text-sm font-semibold text-text-secondary uppercase">Pending Approval</p><p class="text-3xl font-bold text-text-primary mt-2">${pendingBookings}</p></div></div>
+                    <div class="card p-6 stat-card" style="--accent-color: var(--success-color);"><div><p class="text-sm font-semibold text-text-secondary uppercase">Completed This Month</p><p class="text-3xl font-bold text-text-primary mt-2">${completedThisMonth}</p></div></div>
+                `;
+            }
+            
+            /**
+             * Updates the dashboard charts with the latest data.
+             * Changed chart types and added a new one.
+             */
+            updateCharts() {
+                const packageCtx = document.getElementById('packageChart');
+                const incomeCtx = document.getElementById('incomeExpenseChart');
+                const expenseCategoryCtx = document.getElementById('expenseCategoryChart');
+                const revenueByMonthCtx = document.getElementById('revenueByMonthChart'); // New chart
+
+                if (!packageCtx || !incomeCtx || !expenseCategoryCtx || !revenueByMonthCtx) return;
+
+                const isDark = document.documentElement.classList.contains('dark');
+                const textColor = isDark ? '#c9d1d9' : '#1e293b';
+                const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+                const lightColors = ['#2563eb', '#16a34a', '#f59e0b', '#dc2626', '#9333ea', '#60a5fa', '#f87171'];
+                const darkColors = ['#58a6ff', '#3fb950', '#d29922', '#f85149', '#a78bfa', '#3b82f6', '#ef4444'];
+
+
+                // 1. Package Distribution Chart (Doughnut) - No Change
+                const packageCounts = this.state.bookings.reduce((acc, b) => { acc[b.package] = (acc[b.package] || 0) + 1; return acc; }, {});
+                if (this.chartInstances.packageChart) this.chartInstances.packageChart.destroy();
+                this.chartInstances.packageChart = new Chart(packageCtx.getContext('2d'), { type: 'doughnut', data: { labels: Object.keys(packageCounts), datasets: [{ data: Object.values(packageCounts), backgroundColor: isDark ? darkColors : lightColors, borderColor: isDark ? '#161B22' : '#ffffff', borderWidth: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, padding: 20, usePointStyle: true } }} } });
+
+                // 2. Monthly Income vs. Expense Chart (Line) - No Change
+                const monthLabels = []; const incomeData = []; const expenseData = [];
+                for (let i = 5; i >= 0; i--) {
+                    const d = new Date(new Date().setMonth(new Date().getMonth() - i));
+                    monthLabels.push(d.toLocaleString('default', { month: 'short' }));
+                    const monthIncome = this.state.bookings.filter(b => b.date && new Date(b.date).getMonth() === d.getMonth()).reduce((s, b) => s + b.paidAmount, 0);
+                    const monthExpense = this.state.oneTimeExpenses.filter(e => e.date && new Date(e.date).getMonth() === d.getMonth()).reduce((s, e) => s + e.amount, 0);
+                    incomeData.push(monthIncome); expenseData.push(monthExpense);
+                }
+                if (this.chartInstances.incomeExpenseChart) this.chartInstances.incomeExpenseChart.destroy();
+                this.chartInstances.incomeExpenseChart = new Chart(incomeCtx.getContext('2d'), { type: 'line', data: { labels: monthLabels, datasets: [{ label: 'Income', data: incomeData, borderColor: isDark ? '#58a6ff' : '#2563eb', backgroundColor: isDark ? 'rgba(88, 166, 255, 0.1)' : 'rgba(37, 99, 235, 0.1)', fill: true, tension: 0.4 }, { label: 'Expense', data: expenseData, borderColor: isDark ? '#f85149' : '#dc2626', backgroundColor: isDark ? 'rgba(248, 81, 73, 0.1)' : 'rgba(220, 38, 38, 0.1)', fill: true, tension: 0.4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: textColor }}}, scales: { y: { beginAtZero: true, ticks: { color: textColor, callback: (v) => `৳${v/1000}k` }, grid: { color: gridColor } }, x: { ticks: { color: textColor }, grid: { color: gridColor } } } } });
+
+                // 3. New Chart: Expense Breakdown (Bar Chart)
+                const expenseCategories = this.state.oneTimeExpenses.reduce((acc, e) => {
+                    acc[e.category] = (acc[e.category] || 0) + e.amount;
+                    return acc;
+                }, {});
+                if (this.chartInstances.expenseCategoryChart) this.chartInstances.expenseCategoryChart.destroy();
+                this.chartInstances.expenseCategoryChart = new Chart(expenseCategoryCtx.getContext('2d'), {
+                    type: 'bar',
+                    data: {
+                        labels: Object.keys(expenseCategories),
+                        datasets: [{
+                            label: 'Total Amount (BDT)',
+                            data: Object.values(expenseCategories),
+                            backgroundColor: isDark ? darkColors[0] : lightColors[0], // Use a single color or multiple
+                            borderColor: isDark ? darkColors[0] : lightColors[0],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { labels: { color: textColor }}},
+                        scales: {
+                            y: { beginAtZero: true, ticks: { color: textColor, callback: (v) => `৳${v/1000}k` }, grid: { color: gridColor }},
+                            x: { ticks: { color: textColor }, grid: { display: false }}
+                        }
+                    }
+                });
+
+                // 4. New Chart: Revenue by Month (Polar Area Chart - for a different visual)
+                const monthlyRevenue = {};
+                this.state.bookings.forEach(b => {
+                    if (b.date) {
+                        const monthYear = new Date(b.date).toLocaleString('default', { month: 'short', year: '2-digit' });
+                        monthlyRevenue[monthYear] = (monthlyRevenue[monthYear] || 0) + b.paidAmount;
+                    }
+                });
+                if (this.chartInstances.revenueByMonthChart) this.chartInstances.revenueByMonthChart.destroy();
+                this.chartInstances.revenueByMonthChart = new Chart(revenueByMonthCtx.getContext('2d'), {
+                    type: 'polarArea', // A different chart type for visual variety
+                    data: {
+                        labels: Object.keys(monthlyRevenue),
+                        datasets: [{
+                            data: Object.values(monthlyRevenue),
+                            backgroundColor: isDark ? darkColors : lightColors,
+                            borderColor: isDark ? '#161B22' : '#ffffff',
+                            borderWidth: 2
+                        }]
+                    },
+                    options: {
+                        responsive: true, maintainAspectRatio: false,
+                        plugins: { legend: { position: 'bottom', labels: { color: textColor }}},
+                        scales: {
+                            r: { ticks: { display: false }, grid: { color: gridColor }}
+                        }
+                    }
+                });
+            }
+
+            /**
+             * Defines the stages for the project pipeline quick view.
+             * @returns {Array<Object>}
+             */
+            getQuickViewStages() {
+                return [
+                    { key: 'pending', title: 'Pending Approval', icon: 'fa-hourglass-half', color: 'var(--warning-color)', filter: b => b.status === 'pending', action: 'accept' },
+                    { key: 'recording', title: 'Awaiting Recording', icon: 'fa-microphone', color: 'var(--accent-color)', filter: b => b.status === 'progress' && b.todo && b.todo[0] && !b.todo[0].completed, action: 'complete-step', todoStep: 'Recording' },
+                    { key: 'humming', title: 'Awaiting Humming', icon: 'fa-music', color: 'var(--accent-color)', filter: b => b.status === 'progress' && b.todo && b.todo[0]?.completed && b.todo[1] && !b.todo[1].completed, action: 'complete-step', todoStep: 'Waiting for Humming' },
+                    { key: 'organizing', title: 'Awaiting Organization', icon: 'fa-folder-open', color: 'var(--accent-color)', filter: b => b.status === 'progress' && b.todo && b.todo[1]?.completed && b.todo[2] && !b.todo[2].completed, action: 'complete-step', todoStep: 'Organizing Project' },
+                    { key: 'composition', title: 'Awaiting Composition', icon: 'fa-sliders-h', color: 'var(--accent-color)', filter: b => b.status === 'progress' && b.todo && b.todo[2]?.completed && b.todo[3] && !b.todo[3].completed, action: 'complete-step', todoStep: 'Composition Required' },
+                    { key: 'mixing', title: 'Awaiting Mix/Master', icon: 'fa-headphones', color: 'var(--accent-color)', filter: b => b.status === 'progress' && b.todo && b.todo[3]?.completed && b.todo[4] && !b.todo[4].completed, action: 'complete-step', todoStep: 'Mixing & Mastering' },
+                ];
+            }
+
+            /**
+             * Renders the quick view cards on the Bookings page.
+             */
+            renderQuickView() {
+                const container = document.getElementById('quick-view-container');
+                if (!container) return;
+                const stages = this.getQuickViewStages();
+                container.innerHTML = stages.map(stage => {
+                    const count = this.state.bookings.filter(stage.filter).length;
+                    return `
+                        <div class="card quick-view-card p-4 flex items-center space-x-4" data-stage-key="${stage.key}" ${count === 0 ? 'style="opacity: 0.6; cursor: default;"' : ''}>
+                            <i class="fas ${stage.icon} text-xl w-8 text-center" style="color: ${stage.color}"></i>
+                            <div>
+                                <p class="text-2xl font-bold">${count}</p>
+                                <p class="text-xs text-text-secondary">${stage.title}</p>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            /**
+             * Opens a modal showing a list of bookings for a specific pipeline stage.
+             * @param {string} stageKey - The key of the stage to display.
+             */
+            showQuickViewModal(stageKey) {
+                const stages = this.getQuickViewStages();
+                const stage = stages.find(s => s.key === stageKey);
+                if (!stage) return;
+
+                const filteredBookings = this.state.bookings.filter(stage.filter);
+                if (filteredBookings.length === 0) return;
+
+                const modalTitle = document.getElementById('quick-view-modal-title');
+                const modalContent = document.getElementById('quick-view-modal-content');
+
+                modalTitle.textContent = `${stage.title} (${filteredBookings.length})`;
+                modalContent.innerHTML = filteredBookings.map(booking => {
+                    let actionButton = '';
+                    if (stage.action === 'accept') {
+                        actionButton = `<button class="btn btn-success text-xs" data-action="accept-booking-quickview" data-id="${booking.id}"><i class="fas fa-check mr-2"></i>Accept</button>`;
+                    } else if (stage.action === 'complete-step') {
+                        actionButton = `<button class="btn btn-primary text-xs" data-action="complete-step-quickview" data-id="${booking.id}" data-todo-name="${stage.todoStep}"><i class="fas fa-check-double mr-2"></i>Complete Step</button>`;
+                    }
+                    return `
+                        <div class="card p-3 flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-text-primary">${booking.customer}</p>
+                                <p class="text-sm text-text-secondary">Delivery: ${booking.deliveryDate || 'Not set'}</p>
+                            </div>
+                            ${actionButton}
+                        </div>
+                    `;
+                }).join('');
+
+                this.openModal('quick-view-modal');
+            }
+
+            /**
+             * Renders the main Kanban board on the Bookings page.
+             */
+            renderKanban() {
+                const board = document.getElementById('kanban-board');
+                if (!board) return;
+
+                const upcomingProgressBookings = this.state.bookings
+                    .filter(b => b.status === 'progress' && b.deliveryDate && new Date(b.deliveryDate) >= new Date())
+                    .sort((a,b) => new Date(a.deliveryDate) - new Date(b.deliveryDate));
+                const nearestDeliveryId = upcomingProgressBookings.length > 0 ? upcomingProgressBookings[0].id : null;
+
+                const columns = {
+                    pending: { title: 'Pending Approval', color: 'var(--warning-color)', icon: 'fa-hourglass-half', bookings: this.state.bookings.filter(b => b.status === 'pending') },
+                    progress: { title: 'In Progress', color: 'var(--accent-color)', icon: 'fa-cogs', bookings: this.state.bookings.filter(b => b.status === 'progress') },
+                    completed: { 
+                        title: 'Completed', color: 'var(--success-color)', icon: 'fa-check-circle', 
+                        bookings: this.state.bookings.filter(b => {
+                            if (b.status !== 'completed' || !b.deliveryDate) return false;
+                            const delivery = new Date(b.deliveryDate);
+                            return delivery.getMonth() === this.state.completedFilterMonth && delivery.getFullYear() === this.state.completedFilterYear;
+                        }),
+                        filter: this.renderCompletedFilter(),
+                    }
+                };
+                
+                board.innerHTML = Object.entries(columns).map(([key, col]) => `
+                    <div class="kanban-column rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="font-semibold text-text-primary flex items-center"><i class="fas ${col.icon} mr-2" style="color:${col.color};"></i>${col.title} (${col.bookings.length})</h3>
+                            ${col.filter || ''}
+                        </div>
+                        <div id="kanban-col-${key}" class="space-y-4 h-full min-h-[200px]" data-status="${key}">
+                            ${col.bookings.sort((a,b) => new Date(a.date) - new Date(b.date)).map(booking => this.getKanbanCardHTML(booking, col, booking.id === nearestDeliveryId)).join('') || `<p class="text-sm text-center text-text-secondary py-4">${key === 'completed' ? 'No completed projects for this period.' : 'Drag bookings here.'}</p>`}
+                        </div>
+                    </div>`).join('');
+                
+                // Initialize SortableJS on the new columns
+                document.querySelectorAll('.kanban-column > div[data-status]').forEach(el => new Sortable(el, { group: 'kanban', animation: 150, ghostClass: 'sortable-ghost', dragClass: 'sortable-drag', onEnd: e => this.handleKanbanDrop(e) }));
+                
+                // Re-attach event listeners for the filters
+                document.getElementById('completed-month-filter')?.addEventListener('change', e => { this.state.completedFilterMonth = parseInt(e.target.value); this.renderKanban(); });
+                document.getElementById('completed-year-filter')?.addEventListener('change', e => { this.state.completedFilterYear = parseInt(e.target.value); this.renderKanban(); });
+            }
+
+            /**
+             * Renders the month/year filter for the 'Completed' Kanban column.
+             * @returns {string} HTML for the filter selects.
+             */
+            renderCompletedFilter() {
+                const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+                const currentYear = new Date().getFullYear();
+                let monthOptions = months.map((m, i) => `<option value="${i}" ${i === (this.state.completedFilterMonth || new Date().getMonth()) ? 'selected' : ''}>${m}</option>`).join('');
+                let yearOptions = Array.from({length: 5}, (_, i) => currentYear - i).map(y => `<option value="${y}" ${y === (this.state.completedFilterYear || currentYear) ? 'selected' : ''}>${y}</option>`).join('');
+                return `<div class="flex items-center space-x-2"><select id="completed-month-filter" class="input-field !w-auto !py-1 !px-2 text-xs">${monthOptions}</select><select id="completed-year-filter" class="input-field !w-auto !py-1 !px-2 text-xs">${yearOptions}</select></div>`;
+            }
+
+            /**
+             * Generates the HTML for a single Kanban card.
+             * @param {Object} booking - The booking data object.
+             * @param {Object} col - The column data object.
+             * @param {boolean} isNearestDelivery - Highlights the card if it has the nearest upcoming delivery.
+             * @returns {string} HTML for the card.
+             */
+            getKanbanCardHTML(booking, col, isNearestDelivery) {
+                const due = (booking.totalPrice || 0) - (booking.paidAmount || 0);
+                const deliveryDateHTML = booking.deliveryDate ? `<p class="text-sm text-text-secondary mt-1"><i class="far fa-calendar-check mr-1"></i> Delivery: ${new Date(booking.deliveryDate).toLocaleDateString()}</p>` : '';
+                
+                let actionButtons = '';
+                if(booking.status === 'pending') {
+                    actionButtons = `<button class="btn btn-success text-xs mt-2 w-full" data-action="accept-booking" data-id="${booking.id}"><i class="fas fa-check mr-2"></i>Accept Booking</button>`;
+                } else if (booking.status === 'progress') {
+                    if (due > 0 && booking.customerPhone) {
+                        actionButtons = `<button class="btn btn-secondary text-xs mt-2" data-action="send-reminder" data-phone="${booking.customerPhone}" data-due="${due}" data-name="${booking.customer}"><i class="fab fa-whatsapp mr-2"></i>Send Reminder</button>`;
+                    }
+                } else if (booking.status === 'completed' && booking.customerPhone) {
+                    actionButtons = `<button class="btn btn-success text-xs mt-2" data-action="send-completion" data-phone="${booking.customerPhone}" data-due="${due}" data-name="${booking.customer}" data-drive-link="${booking.googleDriveLink || ''}"><i class="fab fa-whatsapp mr-2"></i>Send Completion Message</button>`;
+                }
+
+                return `<div class="kanban-card p-4 rounded-lg shadow-sm ${isNearestDelivery ? 'nearest-delivery' : ''}" style="border-left-color: ${col.color};" data-id="${booking.id}">
+                            <div class="flex justify-between items-start">
+                                <p class="font-bold">${booking.customer}</p>
+                                <span class="text-xs font-semibold px-2 py-1 rounded-full" style="background-color: ${col.color}20; color: ${col.color}">${booking.package}</span>
+                            </div>
+                            ${deliveryDateHTML}
+                            <div class="flex justify-between items-center mt-2 text-sm text-text-secondary border-t border-border-color pt-2">
+                                <span>Paid: ${this.formatCurrency(booking.paidAmount)}</span>
+                                <span class="font-bold ${due > 0 ? 'text-danger-color' : 'text-success-color'}">Due: ${this.formatCurrency(due)}</span>
+                            </div>
+                            <div class="mt-4">
+                                ${booking.status === 'progress' ? this.renderTodoList(booking) : ''}
+                                ${booking.status === 'completed' ? `<p class="text-sm text-green-500 mt-2 flex items-center"><i class="fas fa-check-double mr-2"></i>Project Delivered</p>` : ''}
+                                ${actionButtons}
+                            </div>
+                        </div>`;
+            }
+            
+            /**
+             * Handles the drop event from SortableJS to update booking status.
+             * @param {import("sortablejs").SortableEvent} evt - The event object from SortableJS.
+             */
+            async handleKanbanDrop(evt) {
+                const { id } = evt.item.dataset;
+                const { status: newStatus } = evt.to.dataset;
+                const { status: oldStatus } = evt.from.dataset;
+                const booking = this.state.bookings.find(b => b.id === id);
+
+                if (booking && newStatus && newStatus !== oldStatus) {
+                    // Prevent moving from 'pending' to 'completed' directly
+                    if(oldStatus === 'pending' && newStatus !== 'progress') {
+                        this.showToast('Please accept pending bookings first.', 'warning');
+                        this.router.renderCurrentPage(); // Re-render to revert the visual change
+                        return;
+                    }
+                    try {
+                        // API call to update booking status
+                        const response = await fetch(`${BACKEND_API_URL}/bookings/${id}/status`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                            body: JSON.stringify({ status: newStatus })
+                        });
+                        if (response.ok) {
+                            this.showToast(`Booking moved to ${newStatus}.`);
+                            this.fetchInitialData(); // Re-fetch all data to ensure state is consistent
+                        } else {
+                            const errorData = await response.json();
+                            this.showToast(errorData.message || 'Failed to update booking status.', 'danger');
+                            this.router.renderCurrentPage(); // Revert on failure
+                        }
+                    } catch (error) {
+                        console.error("Error updating booking status via API:", error);
+                        this.showToast('Network error or server unavailable.', 'danger');
+                        this.router.renderCurrentPage(); // Revert on failure
+                    }
+                }
+            }
+            
+            /**
+             * Renders the interactive to-do list inside a Kanban card.
+             * @param {Object} booking - The booking data object.
+             * @returns {string} HTML for the to-do list.
+             */
+            renderTodoList(booking) {
+                let html = '<div class="space-y-2 text-sm">';
+                let activeStepFound = false;
+                // Ensure booking.todo is an array and has at least one item
+                if (!booking.todo || booking.todo.length === 0) {
+                    // Initialize todo list if not present, e.g., for older bookings
+                    booking.todo = this.TODO_STEPS.map(step => ({name: step, completed: false}));
+                }
+
+                booking.todo.forEach(todoItem => {
+                    let stepClass = todoItem.completed ? 'completed' : (!activeStepFound ? (activeStepFound = true, 'active') : '');
+                    html += `<label class="todo-step ${stepClass} cursor-pointer"><input type="checkbox" class="hidden" data-action="toggle-todo" data-booking-id="${booking.id}" data-todo-name="${todoItem.name}" ${todoItem.completed ? 'checked' : ''}><div class="todo-circle w-8 h-8 rounded-full flex items-center justify-content-center mr-3 flex-shrink-0"><i class="fas ${todoItem.completed ? 'fa-check' : 'fa-music'}"></i></div><span class="todo-label">${todoItem.name}</span></label>`;
+                });
+                if(booking.todo && booking.todo.every(t => t.completed) && booking.todo.length > 0 && booking.status !== 'completed') {
+                    html += `<button class="btn btn-primary w-full text-xs mt-4" data-action="mark-completed" data-id="${booking.id}">Mark Project as Completed</button>`;
+                }
+                return html + '</div>';
+            }
+
+            /**
+             * A generic function to render data into a table.
+             * @param {string} tableId - The ID of the table element.
+             * @param {Array<Object>} headers - Configuration for table headers.
+             * @param {Array<Object>} data - The array of data to render.
+             */
+            renderGenericTable(tableId, headers, data) {
+                const table = document.getElementById(tableId);
+                if (!table) return;
+                let head = `<thead><tr>${headers.map(h => `<th class="p-3 font-semibold text-left text-text-secondary">${h.label}</th>`).join('')}</tr></thead>`;
+                let body = `<tbody>${data.length > 0 ? data.map(item => `<tr class="border-t border-border-color">${headers.map(h => `<td class="p-3 text-text-primary align-top">${h.formatter ? h.formatter(item[h.key], item) : item[h.key] || ''}</td>`).join('')}</tr>`).join('') : `<tr><td colspan="${headers.length}" class="text-center p-4 text-text-secondary">No data available.</td></tr>`}</tbody>`;
+                table.innerHTML = head + body;
+            }
+
+            // --- SPECIFIC TABLE RENDERERS ---
+
+            renderPaymentsTable() {
+                // Ensure data is sorted for consistent display
+                const sortedBookings = [...this.state.bookings].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+                this.renderGenericTable('payments-table', [
+                    { label: 'Booking ID', key: 'id' },
+                    { label: 'Customer', key: 'customer' },
+                    { label: 'Total', key: 'totalPrice', formatter: v => this.formatCurrency(v) },
+                    { label: 'Paid', key: 'paidAmount', formatter: v => this.formatCurrency(v) },
+                    { label: 'Due', key: 'id', formatter: (v, item) => `<span class="font-bold ${((item.totalPrice || 0) - (item.paidAmount || 0)) > 0 ? 'text-danger-color' : 'text-success-color'}">${this.formatCurrency((item.totalPrice || 0) - (item.paidAmount || 0))}</span>` },
+                    { label: 'Status', key: 'id', formatter: (v, item) => {
+                        const due = (item.totalPrice || 0) - (item.paidAmount || 0);
+                        return `<span class="px-2 py-1 text-xs rounded-full font-medium ${due <= 0 ? 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300'}">${due <= 0 ? 'Fully Paid' : 'Partial'}</span>`;
+                    }},
+                    { label: 'Booking Date', key: 'bookingDate', formatter: date => new Date(date).toLocaleDateString() } // Added booking date for context
+                ], sortedBookings);
+            }
+            
+            renderRecurringExpenses() {
+                const list = document.getElementById('recurring-expenses-list');
+                if(!list) return;
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+
+                list.innerHTML = this.state.recurringExpenses.length > 0 ? this.state.recurringExpenses.map(exp => {
+                    // Check if lastPaidMonth corresponds to the current month of the current year
+                    const isPaid = exp.lastPaidMonth === currentMonth && exp.lastPaidYear === currentYear;
+                    return `<div class="flex justify-between items-center p-3 rounded-md ${isPaid ? 'bg-green-50 dark:bg-green-900/20' : 'bg-gray-50 dark:bg-gray-800/20'}"><div><p class="font-medium">${exp.item}</p><p class="text-sm text-text-secondary">Due: Day ${exp.dueDay}</p></div><div class="flex items-center"><span class="font-bold mr-4">${this.formatCurrency(exp.amount)}</span><button class="btn ${isPaid ? 'btn-secondary' : 'btn-success'} text-xs" ${isPaid ? 'disabled' : ''} data-action="pay-recurring" data-id="${exp.id}" data-item="${exp.item}" data-amount="${exp.amount}">${isPaid ? 'Paid' : 'Pay Now'}</button></div></div>`;
+                }).join('') : `<p class="text-sm text-center text-text-secondary py-4">No recurring expenses set up.</p>`;
+            }
+
+            renderOneTimeExpensesTable() {
+                this.renderGenericTable('one-time-expenses-table', [ 
+                    { label: 'Date', key: 'date', formatter: date => new Date(date).toLocaleDateString() }, 
+                    { label: 'Description', key: 'description' }, 
+                    { label: 'Amount', key: 'amount', formatter: v => this.formatCurrency(v) },
+                    { label: 'Category', key: 'category' } // Added category
+                ], [...this.state.oneTimeExpenses].sort((a,b) => new Date(b.date) - new Date(a.date)));
+            }
+            
+            renderSalariesTable() {
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+                // Filter users who have a salary defined
+                const salaries = this.state.users.filter(u => typeof u.salary === 'number' && u.salary > 0).map(u => ({
+                    ...u, 
+                    isPaid: u.lastPaidMonth === currentMonth && u.lastPaidYear === currentYear
+                }));
+                
+                this.renderGenericTable('salaries-table', [
+                    { label: 'Employee', key: 'name' }, 
+                    { label: 'Role', key: 'role' }, 
+                    { label: 'Salary', key: 'salary', formatter: v => this.formatCurrency(v) },
+                    { label: 'Status', key: 'isPaid', formatter: isPaid => isPaid ? `<span class="text-green-500 font-medium">Paid this month</span>` : `<span class="text-red-500 font-medium">Payment Due</span>` },
+                    { label: 'Actions', key: 'id', formatter: (id, item) => `<button class="btn btn-primary text-xs" data-action="pay-salary" data-id="${id}" data-name="${item.name}" data-amount="${item.salary}" ${item.isPaid ? 'disabled' : ''}>Pay Now</button>` }
+                ], salaries);
+            };
+            
+            renderUsersTable() {
+                this.renderGenericTable('users-table', [ 
+                    { label: 'Name', key: 'name' }, 
+                    { label: 'Role', key: 'role' },
+                    { label: 'Email', key: 'email' }, // Added email
+                    { label: 'Phone', key: 'phone' } // Added phone
+                ], this.state.users);
+            }
+
+            // --- New Page Renderers ---
+            render_delivery() {
+                this.pageTitle.textContent = 'Deliveries';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">Manage Project Deliveries</h3>
+                        <div class="overflow-x-auto mb-6">
+                            <table id="deliveries-table" class="table w-full text-left text-sm"></table>
+                        </div>
+                        <h3 class="font-semibold text-text-primary mb-4">Latest Delivered Projects</h3>
+                        <div id="latest-deliveries-list" class="space-y-4"></div>
+                    </div>
+                `;
+                this.renderDeliveriesTable();
+                this.renderLatestDeliveries();
+            }
+
+            renderDeliveriesTable() {
+                const headers = [
+                    { label: 'Booking ID', key: 'id' }, // Changed from bookingId to id as per updated booking data structure
+                    { label: 'Customer', key: 'customer' },
+                    { label: 'Package', key: 'package' },
+                    { label: 'Delivery Date', key: 'deliveryDate', formatter: date => new Date(date).toLocaleDateString() },
+                    { label: 'Files', key: 'googleDriveLink', formatter: link => link ? `<a href="${link}" target="_blank" class="accent-text hover:underline">View Link</a>` : 'N/A' },
+                    { label: 'Actions', key: 'id', formatter: (id, item) => `
+                        <button class="btn btn-primary text-xs" data-action="open-file-upload-modal" data-booking-id="${item.id}">
+                            <i class="fas fa-upload mr-2"></i>Upload File
+                        </button>
+                    ` }
+                ];
+                // Filter only completed bookings that have deliveryDate set
+                const deliveredBookings = this.state.bookings.filter(b => b.status === 'completed' && b.deliveryDate);
+                this.renderGenericTable('deliveries-table', headers, deliveredBookings);
+            }
+
+            renderLatestDeliveries() {
+                const container = document.getElementById('latest-deliveries-list');
+                if (!container) return;
+
+                // Sort by delivery date descending and take top few
+                const latest = [...this.state.bookings]
+                    .filter(b => b.status === 'completed' && b.deliveryDate)
+                    .sort((a,b) => new Date(b.deliveryDate) - new Date(a.deliveryDate))
+                    .slice(0, 5); // Show latest 5
+
+                if (latest.length === 0) {
+                    container.innerHTML = `<p class="text-center text-text-secondary">No recent deliveries.</p>`;
+                    return;
+                }
+
+                container.innerHTML = latest.map(item => `
+                    <div class="card p-4 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-text-primary">${item.customer}</p>
+                            <p class="text-sm text-text-secondary">Delivered: ${new Date(item.deliveryDate).toLocaleDateString()} - Package: ${item.package}</p>
+                        </div>
+                        <a href="${item.googleDriveLink || '#'}" target="_blank" class="btn btn-secondary text-xs">
+                            <i class="fas fa-external-link-alt mr-2"></i>View
+                        </a>
+                    </div>
+                `).join('');
+            }
+
+            render_cms() {
+                this.pageTitle.textContent = 'CMS';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">Website Content Management</h3>
+                        <div id="cms-content-list" class="space-y-4">
+                            </div>
+                        <button class="btn btn-primary mt-6" data-action="save-all-cms-changes">
+                            <i class="fas fa-save mr-2"></i>Save All CMS Changes
+                        </button>
+                    </div>
+                `;
+                this.renderCmsContent();
+            }
+
+            renderCmsContent() {
+                const container = document.getElementById('cms-content-list');
+                if (!container) return;
+
+                if (this.state.cmsContent.length === 0) {
+                    container.innerHTML = `<p class="text-center text-text-secondary">No CMS content available.</p>`;
+                    return;
+                }
+
+                container.innerHTML = this.state.cmsContent.map(item => `
+                    <div class="card p-4 flex justify-between items-center">
+                        <div>
+                            <p class="font-bold text-text-primary">${item.section}: ${item.key}</p>
+                            <p class="text-sm text-text-secondary truncate w-96">${item.value}</p>
+                        </div>
+                        <button class="btn btn-secondary text-xs" data-action="edit-cms" data-id="${item.id}">
+                            <i class="fas fa-edit mr-2"></i>Edit
+                        </button>
+                    </div>
+                `).join('');
+            }
+            
+            openCmsModal(contentId) {
+                const item = this.state.cmsContent.find(c => c.id === contentId);
+                if (!item) return;
+
+                const form = document.getElementById('cms-edit-form');
+                form.querySelector('[name="contentId"]').value = item.id;
+                form.querySelector('[name="section"]').value = item.section;
+                form.querySelector('[name="key"]').value = item.key;
+                form.querySelector('[name="value"]').value = item.value;
+                this.openModal('cms-modal');
+            }
+
+            render_surveys() {
+                this.pageTitle.textContent = 'Surveys';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">Customer Survey Responses</h3>
+                        <div class="overflow-x-auto">
+                            <table id="surveys-table" class="table w-full text-left text-sm"></table>
+                        </div>
+                    </div>
+                `;
+                this.renderSurveysTable();
+            }
+
+            renderSurveysTable() {
+                const headers = [
+                    { label: 'Survey ID', key: 'id' },
+                    { label: 'Booking ID', key: 'bookingId' },
+                    { label: 'Rating', key: 'rating', formatter: r => `⭐ ${r}/5` },
+                    { label: 'Feedback', key: 'feedback' },
+                    { label: 'Date', key: 'submittedAt', formatter: date => new Date(date).toLocaleDateString() },
+                    { label: 'Actions', key: 'id', formatter: (id, item) => `
+                        <button class="btn btn-secondary text-xs" data-action="view-survey-details" data-id="${item.id}">
+                            <i class="fas fa-eye mr-2"></i>View
+                        </button>
+                    ` }
+                ];
+                this.renderGenericTable('surveys-table', headers, this.state.surveyResponses);
+            }
+
+            render_logs() {
+                this.pageTitle.textContent = 'Logs';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">System Activity Logs</h3>
+                        <div class="overflow-x-auto">
+                            <table id="logs-table" class="table w-full text-left text-sm"></table>
+                        </div>
+                    </div>
+                `;
+                this.renderLogsTable();
+            }
+
+            renderLogsTable() {
+                const headers = [
+                    { label: 'Timestamp', key: 'timestamp', formatter: ts => new Date(ts).toLocaleString() },
+                    { label: 'User', key: 'userId' }, 
+                    { label: 'Action Type', key: 'actionType' },
+                    { label: 'Details', key: 'details' },
+                    { label: 'IP Address', key: 'ipAddress' },
+                ];
+                this.renderGenericTable('logs-table', headers, this.state.activityLogs);
+            }
+
+
+            /**
+             * Renders the action items in the sidebar based on current state.
+             */
+            renderTodoListSidebar() {
+                const list = document.getElementById('todo-sidebar-list');
+                if(!list) return;
+                const items = [];
+                const currentMonth = new Date().getMonth();
+                const currentYear = new Date().getFullYear();
+
+                // Recurring expenses due
+                this.state.recurringExpenses.forEach(exp => { 
+                    if (exp.lastPaidMonth !== currentMonth || exp.lastPaidYear !== currentYear) {
+                        items.push({ text: `Pay ${exp.item} (৳${exp.amount})`, icon: 'fa-file-invoice-dollar', page: 'expenses' }); 
+                    }
+                });
+
+                // Salaries due
+                this.state.users.forEach(user => {
+                    if (user.salary && (user.lastPaidMonth !== currentMonth || user.lastPaidYear !== currentYear)) {
+                         items.push({ text: `Pay ${user.name}'s salary (৳${user.salary})`, icon: 'fa-money-bill-wave', page: 'salaries' });
+                    }
+                });
+
+                // Next booking tasks
+                this.state.bookings.forEach(booking => { 
+                    if (booking.status === 'progress') { 
+                        const nextTask = (booking.todo || []).find(t => !t.completed); 
+                        if (nextTask) {
+                            items.push({ text: `Next: ${nextTask.name} for ${booking.customer.split(' ')[0]}`, icon: 'fa-cogs', page: 'bookings' }); 
+                        }
+                    }
+                });
+                
+                list.innerHTML = items.length === 0 ? `<p class="px-4 text-xs text-text-secondary">No pending actions.</p>` : items.slice(0, 5).map(item => `<a href="#${item.page}" class="sidebar-link !py-2 !px-4 text-xs"><i class="fas ${item.icon} w-5 mr-2 text-accent-color"></i><span>${item.text}</span></a>`).join('');
+            }
+            
+            /**
+             * Sets up all major UI event listeners using event delegation.
+             */
+            setupUIEventListeners() {
+                // Delegated click listener on the body for all [data-action] buttons
+                document.body.addEventListener('click', async e => {
+                    const target = e.target.closest('[data-action], [data-stage-key]');
+                    if (!target) return;
+
+                    // Handle clicks on quick-view cards
+                    if (target.dataset.stageKey) {
+                        this.showQuickViewModal(target.dataset.stageKey);
+                        return;
+                    }
+                    
+                    // Handle clicks on all other action buttons
+                    const { action, id, bookingId, todoName, phone, due, name, driveLink, amount, item } = target.dataset;
+                    
+                    const handleApiUpdate = async (endpoint, method, body, successMsg) => {
+                        try {
+                            const response = await fetch(`${BACKEND_API_URL}${endpoint}`, {
+                                method: method,
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                                body: JSON.stringify(body)
+                            });
+                            if (response.ok) {
+                                this.showToast(successMsg);
+                                await this.fetchInitialData(); // Re-fetch all data to update UI
+                                return true;
+                            } else {
+                                const errorData = await response.json();
+                                // --- Update Idea: Handle 401/403 for token expiry/unauthorized access gracefully ---
+                                if (response.status === 401 || response.status === 403) {
+                                    localStorage.removeItem('authToken'); // Clear invalid token
+                                    localStorage.removeItem('userRole');
+                                    localStorage.removeItem('userId');
+                                    this.showToast('Session expired or unauthorized. Please log in again.', 'danger');
+                                    setTimeout(() => { window.location.href = './login.html'; }, 1500);
+                                    return false;
+                                }
+                                this.showToast(errorData.message || 'Action failed.', 'danger');
+                                return false;
+                            }
+                        } catch(err) { 
+                            console.error(`API Error on ${action}:`, err); 
+                            this.showToast('Network error or server unavailable.', 'danger'); 
+                            return false; 
+                        }
+                    }
+
+                    switch(action) {
+                        case 'accept-booking':
+                        case 'accept-booking-quickview':
+                            // Initialize todo steps when accepting a booking
+                            const initialTodo = this.TODO_STEPS.map(step => ({name: step, completed: false}));
+                            await handleApiUpdate(`/bookings/${id}/status`, 'PUT', { status: 'progress', todo: initialTodo }, 'Booking accepted and moved to In Progress.');
+                            this.closeModal('quick-view-modal');
+                            break;
+                        case 'complete-step-quickview':
+                            const b = this.state.bookings.find(book => book.id === id);
+                            if (b) {
+                                const updatedTodo = b.todo.map(t => t.name === todoName ? {...t, completed: true} : t);
+                                await handleApiUpdate(`/bookings/${id}/todo`, 'PUT', { todo: updatedTodo });
+                                this.closeModal('quick-view-modal');
+                            }
+                            break;
+                        case 'send-reminder':
+                            const reminderMessage = `Hello ${name},\n\nGreetings from Tanvir Studio! This is a friendly reminder regarding your ongoing project. The current outstanding balance is ${this.formatCurrency(due)}.\n\nPlease feel free to reach out if you have any questions. We appreciate your business!`;
+                            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(reminderMessage)}`, '_blank');
+                            break;
+                        case 'send-completion': {
+                            let completionMessage = `Dear ${name},\n\nGreat news! Your project with Tanvir Studio is now complete. We truly enjoyed working with you.\n\nYou can access your final files via this link:\n${driveLink || '(Link not provided)'}`;
+                            if(parseFloat(due) > 0) {
+                                completionMessage += `\n\nWe'd also like to gently remind you of the final outstanding balance of ${this.formatCurrency(due)}. We appreciate you settling this at your earliest convenience.`;
+                            }
+                            completionMessage += `\n\nThank you again for your business! ✨`;
+                            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(completionMessage)}`, '_blank');
+                            break;
+                        }
+                        case 'mark-completed':
+                            await handleApiUpdate(`/bookings/${id}/status`, 'PUT', { status: 'completed', deliveryDate: new Date().toISOString().split('T')[0] }, 'Project marked as completed!');
+                            break;
+                        case 'toggle-todo': {
+                            const booking = this.state.bookings.find(book => book.id === bookingId);
+                            if (booking) {
+                                const newTodo = booking.todo.map(t => t.name === todoName ? { ...t, completed: target.checked } : t);
+                                await handleApiUpdate(`/bookings/${bookingId}/todo`, 'PUT', { todo: newTodo });
+                            }
+                            break;
+                        }
+                        case 'pay-recurring':
+                             // This assumes a backend endpoint to mark recurring expense as paid for current month/year
+                             await handleApiUpdate(`/expenses/recurring/${id}/pay`, 'PUT', { month: new Date().getMonth(), year: new Date().getFullYear(), expenseItem: item, amount: parseFloat(amount) }, 'Recurring expense marked as paid for this month.');
+                             break;
+                        case 'pay-salary':
+                            // This would involve two API calls usually: record expense and update user's last paid status
+                            const expenseAdded = await handleApiUpdate('/expenses/one-time', 'POST', { description: `Salary for ${name}`, category: 'Salary', amount: parseFloat(amount), date: new Date().toISOString().split('T')[0] }, `Salary for ${name} recorded.`);
+                            if (expenseAdded) { // Only proceed if expense was successfully added
+                                await handleApiUpdate(`/users/${id}/pay-salary`, 'PUT', { month: new Date().getMonth(), year: new Date().getFullYear() }, `User ${name} marked as paid.`);
+                            }
+                            break;
+                        case 'close-modal': this.closeModal(target.closest('.modal-backdrop').id); break;
+                        
+                        // New actions for added sections
+                        case 'open-file-upload-modal':
+                            document.getElementById('upload-file-form').querySelector('[name="bookingId"]').value = bookingId;
+                            this.openModal('file-upload-modal');
+                            break;
+                        case 'edit-cms':
+                            this.openCmsModal(id);
+                            break;
+                        case 'save-all-cms-changes': // Changed from 'save-cms-changes'
+                            // Collect all current CMS content from the state and send as a batch update
+                            await handleApiUpdate('/cms/batch-update', 'PUT', this.state.cmsContent, 'All CMS content updated!');
+                            break;
+                        case 'view-survey-details':
+                            const survey = this.state.surveyResponses.find(s => s.id === id);
+                            if (survey) {
+                                const modalContentEl = document.getElementById('quick-view-modal-content');
+                                document.getElementById('quick-view-modal-title').textContent = `Survey for Booking ID: ${survey.bookingId}`;
+                                modalContentEl.innerHTML = `
+                                    <p><strong>Rating:</strong> ${survey.rating}/5 ⭐</p>
+                                    <p><strong>Feedback:</strong> ${survey.feedback}</p>
+                                    <p class="text-xs text-text-secondary">Submitted: ${new Date(survey.submittedAt).toLocaleString()}</p>
+                                `;
+                                this.openModal('quick-view-modal');
+                            }
+                            break;
+                    }
+                });
+
+                // Delegated submit listener for forms
+                document.body.addEventListener('submit', async e => {
+                    e.preventDefault();
+                    
+                    if (e.target.id === 'booking-form') {
+                        const form = e.target;
+                        const data = {
+                            customer: form.customer.value,
+                            customerPhone: form.customerPhone.value,
+                            package: form.package.value,
+                            totalPrice: parseFloat(form.totalPrice.value),
+                            paidAmount: parseFloat(form.paidAmount.value),
+                            date: form.date.value,
+                            deliveryDate: form.deliveryDate.value,
+                            googleDriveLink: form.googleDriveLink.value,
+                            status: 'pending', // New bookings added from admin start as pending
+                            todo: this.TODO_STEPS.map(step => ({name: step, completed: false})) // Initialize todo list for new bookings
+                        };
+                        try {
+                            const response = await fetch(`${BACKEND_API_URL}/bookings`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                                body: JSON.stringify(data)
+                            });
+                            if (response.ok) {
+                                form.reset(); 
+                                this.showToast('Booking added!');
+                                this.fetchInitialData(); // Re-fetch data to update UI
+                            } else {
+                                const errorData = await response.json();
+                                this.showToast(errorData.message || 'Failed to add booking.', 'danger');
+                            }
+                        } catch(err) { this.showToast('Network error: Failed to add booking.', 'danger'); console.error(err); }
+                    } else if (e.target.id === 'add-expense-form') {
+                        const form = e.target;
+                        const data = { 
+                            description: form.description.value, 
+                            category: form.category.value, 
+                            amount: parseFloat(form.amount.value), 
+                            date: new Date().toISOString().split('T')[0] // Use current date for new expenses
+                        };
+                        try {
+                            const response = await fetch(`${BACKEND_API_URL}/expenses`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                                body: JSON.stringify(data)
+                            });
+                            if (response.ok) {
+                                form.reset(); 
+                                this.showToast('Expense added!');
+                                this.fetchInitialData(); // Re-fetch data to update UI
+                            } else {
+                                const errorData = await response.json();
+                                this.showToast(errorData.message || 'Failed to add expense.', 'danger');
+                            }
+                        } catch(err) { this.showToast('Network error: Failed to add expense.', 'danger'); console.error(err); }
+                    } else if (e.target.id === 'upload-file-form') {
+                        const form = e.target;
+                        const formData = new FormData(form); // For file uploads
+                        const bookingId = formData.get('bookingId');
+                        // Example: send to /api/deliveries/upload
+                        try {
+                            const response = await fetch(`${BACKEND_API_URL}/deliveries/upload/${bookingId}`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${authToken}` }, // FormData automatically sets Content-Type
+                                body: formData // No Content-Type header needed for FormData
+                            });
+                            if (response.ok) {
+                                this.closeModal('file-upload-modal');
+                                this.showToast('File uploaded successfully!');
+                                this.fetchInitialData(); // Re-fetch data
+                            } else {
+                                const errorData = await response.json();
+                                this.showToast(errorData.message || 'File upload failed.', 'danger');
+                            }
+                        } catch (err) {
+                            this.showToast('Network error during file upload.', 'danger');
+                            console.error(err);
+                        }
+                    } else if (e.target.id === 'cms-edit-form') {
+                        const form = e.target;
+                        const contentId = form.contentId.value;
+                        const updatedValue = form.value.value;
+                        // Update the local state first
+                        const itemIndex = this.state.cmsContent.findIndex(item => item.id === contentId);
+                        if (itemIndex > -1) {
+                            this.state.cmsContent[itemIndex].value = updatedValue;
+                        }
+                        // Then send to backend
+                        try {
+                            const response = await fetch(`${BACKEND_API_URL}/cms/${contentId}`, {
+                                method: 'PUT',
+                                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${authToken}` },
+                                body: JSON.stringify({ value: updatedValue })
+                            });
+                            if (response.ok) {
+                                this.closeModal('cms-modal');
+                                this.showToast('CMS content updated!');
+                                // No need to fetchInitialData again immediately if state is updated locally for this specific item
+                                // this.fetchInitialData(); 
+                                this.router.renderCurrentPage(); // Re-render the CMS page to reflect changes
+                            } else {
+                                const errorData = await response.json();
+                                this.showToast(errorData.message || 'CMS update failed.', 'danger');
+                            }
+                        } catch (err) {
+                            this.showToast('Network error during CMS update.', 'danger');
+                            console.error(err);
+                        }
+                    }
+                });
+
+                // Listeners for static buttons
+                document.getElementById('add-booking-btn-header').addEventListener('click', () => {
+                    const form = document.getElementById('booking-form');
+                    form.reset();
+                    // form.id.value = ''; // Assuming ID is generated by backend for new bookings
+                    form.date.value = new Date().toISOString().split('T')[0]; // Default to today
+                    document.getElementById('booking-modal-title').textContent = 'Add New Booking';
+                    this.openModal('booking-modal');
+                });
+
+                document.getElementById('theme-toggle').addEventListener('click', () => this.applyTheme(localStorage.getItem('theme') === 'dark' ? 'light' : 'dark'));
+                
+                // New Logout button listener
+                document.getElementById('admin-logout-btn').addEventListener('click', async () => {
+                    if (confirm('Are you sure you want to log out?')) {
+                        try {
+                            // Assuming your backend has a /api/auth/logout endpoint
+                            // --- Update Idea: Implement a /api/auth/logout endpoint in backend if not already done ---
+                            // This would ideally invalidate the token on the server-side if token blacklisting/revocation is implemented.
+                            // const response = await fetch(`${BACKEND_API_URL}/auth/logout`, { method: 'POST', headers: { 'Authorization': `Bearer ${authToken}` } });
+                            // if (!response.ok) {
+                            //     const errorData = await response.json();
+                            //     this.showToast(errorData.message || 'Logout failed on server.', 'danger');
+                            //     // Still proceed with client-side logout if server logout fails but token is likely invalid anyway
+                            // }
+                            
+                            // Client-side logout
+                            localStorage.removeItem('authToken'); 
+                            localStorage.removeItem('userRole');
+                            localStorage.removeItem('userId');
+                            this.showToast('Logged out successfully.', 'info');
+                            // Redirect to login page
+                            window.location.href = './login.html'; // Adjust this path if your login page is different
+                        } catch (err) {
+                            this.showToast('Network error during logout.', 'danger');
+                            console.error(err);
+                            // Even on network error, clear local storage for security
+                            localStorage.removeItem('authToken'); 
+                            localStorage.removeItem('userRole');
+                            localStorage.removeItem('userId');
+                            window.location.href = './login.html';
+                        }
+                    }
+                });
+            }
+            
+            /**
+             * Applies the selected theme (light/dark) to the UI.
+             * @param {string} theme - The theme to apply ('light' or 'dark').
+             */
+            applyTheme(theme) {
+                document.documentElement.classList.toggle('dark', theme === 'dark');
+                localStorage.setItem('theme', theme);
+                document.getElementById('theme-label').textContent = theme === 'dark' ? 'Light Mode' : 'Dark Mode';
+                document.getElementById('theme-toggle').querySelector('i').className = `fas ${theme === 'dark' ? 'fa-sun' : 'fa-moon'} w-6 mr-3`;
+                // Re-render charts on theme change to update colors
+                if(this.router.isReady) {
+                    this.updateCharts(); // Directly call updateCharts as it depends on theme
+                }
+            }
+        }
+
+        /**
+         * Simple hash-based router for the Single Page Application (SPA).
+         */
+        class Router {
+            constructor(app) {
+                this.app = app;
+                this.mainContent = document.getElementById('main-content');
+                this.pageTitle = document.getElementById('page-title');
+                this.navLinks = document.querySelectorAll('#sidebar-nav a');
+                this.isReady = false; // To prevent premature rendering
+                
+                window.addEventListener('hashchange', () => this.handleRouteChange());
+            }
+
+            /**
+             * Handles changes in the URL hash to render the appropriate page.
+             */
+            handleRouteChange() {
+                const route = window.location.hash.substring(1) || 'dashboard';
+                this.renderPage(route);
+                this.updateActiveLink(route);
+                this.isReady = true;
+            }
+
+            /**
+             * Renders the content for a specific route.
+             * @param {string} route - The route to render.
+             */
+            renderPage(route) {
+                this.mainContent.innerHTML = ''; // Clear previous content
+                this.pageTitle.textContent = route.charAt(0).toUpperCase() + route.slice(1); // Default title from route
+                const pageRenderer = this[`render_${route}`];
+                if (typeof pageRenderer === 'function') {
+                    // Update state variables that might influence rendering (e.g., month/year for completed bookings)
+                    this.app.state.completedFilterMonth = new Date().getMonth();
+                    this.app.state.completedFilterYear = new Date().getFullYear();
+                    pageRenderer.call(this.app); // Call the specific page renderer, passing app context
+                } else {
+                    // Fallback for non-existent routes
+                    this.mainContent.innerHTML = `<p class="text-center text-text-secondary p-8">Page not found or still under development.</p>`;
+                    this.pageTitle.textContent = 'Not Found';
+                }
+            }
+            
+            /**
+             * This method is called by the main app's fetchInitialData
+             * to re-render the content of the currently active page.
+             */
+            renderCurrentPage() {
+                 if (this.isReady) {
+                    const route = window.location.hash.substring(1) || 'dashboard';
+                    this.renderPage(route);
+                 }
+            }
+
+            /**
+             * Updates the active state of the sidebar navigation links.
+             * @param {string} route - The currently active route.
+             */
+            updateActiveLink(route) {
+                this.navLinks.forEach(link => {
+                    link.classList.toggle('active', link.getAttribute('href') === `#${route}`);
+                });
+            }
+            
+            // --- PAGE TEMPLATE RENDERERS ---
+
+            render_dashboard() {
+                this.pageTitle.textContent = 'Dashboard';
+                this.mainContent.innerHTML = `
+                    <div class="page-content">
+                        <div id="stats-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                           ${Array(4).fill('<div class="card p-6 h-28 skeleton"></div>').join('')}
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <div class="card p-6"><h3 class="font-semibold text-text-primary mb-4">Monthly Income vs. Expense</h3><div style="height: 250px;"><canvas id="incomeExpenseChart"></canvas></div></div>
+                            <div class="card p-6"><h3 class="font-semibold text-text-primary mb-4">Package Distribution</h3><div style="height: 250px;"><canvas id="packageChart"></canvas></div></div>
+                        </div>
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="card p-6"><h3 class="font-semibold text-text-primary mb-4">Expense Categories</h3><div style="height: 250px;"><canvas id="expenseCategoryChart"></canvas></div></div>
+                            <div class="card p-6"><h3 class="font-semibold text-text-primary mb-4">Revenue by Month (Visual)</h3><div style="height: 250px;"><canvas id="revenueByMonthChart"></canvas></div></div>
+                        </div>
+                    </div>
+                `;
+                this.app.renderDashboardStats();
+                this.app.updateCharts();
+            }
+
+            render_bookings() {
+                this.pageTitle.textContent = 'Bookings';
+                this.mainContent.innerHTML = `
+                    <div class="page-content">
+                        <div class="mb-8">
+                            <h3 class="text-lg font-semibold text-text-primary mb-4">Project Pipeline</h3>
+                            <div id="quick-view-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                                ${Array(6).fill('<div class="card p-4 h-20 skeleton"></div>').join('')}
+                            </div>
+                        </div>
+                        <div id="kanban-board" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            ${Array(3).fill('<div class="kanban-column rounded-lg p-4 h-96 skeleton"></div>').join('')}
+                        </div>
+                    </div>`;
+                this.app.renderQuickView();
+                this.app.renderKanban();
+            }
+
+            render_payments() {
+                this.pageTitle.textContent = 'Payments';
+                this.mainContent.innerHTML = `<div class="page-content card p-6"><h3 class="font-semibold text-text-primary mb-4">Payment Records</h3><div class="overflow-x-auto"><table id="payments-table" class="table w-full text-left text-sm"></table></div></div>`;
+                this.app.renderPaymentsTable();
+            }
+            
+            render_expenses() {
+                this.pageTitle.textContent = 'Expenses';
+                this.mainContent.innerHTML = `<div class="page-content"><div class="grid grid-cols-1 lg:grid-cols-5 gap-6"><div class="lg:col-span-3 card p-6"><h3 class="font-semibold text-text-primary mb-4">Recurring Monthly Expenses</h3><div id="recurring-expenses-list" class="space-y-3"></div></div><div class="lg:col-span-2 card p-6"><h3 class="font-semibold text-text-primary mb-4">Add One-Time Expense</h3><form id="add-expense-form" class="space-y-4"><div><label class="text-sm font-medium">Category</label><select name="category" class="input-field w-full p-2 mt-1"><option>Marketing</option><option>Equipment</option><option>Refreshments</option><option>Other</option><option>Salaries</option><option>Utilities</option><option>Rent</option></select></div><div><label class="text-sm font-medium">Amount</label><input name="amount" type="number" placeholder="৳" class="input-field w-full p-2 mt-1" required></div><div><label class="text-sm font-medium">Description</label><textarea name="description" class="input-field w-full p-2 mt-1" rows="2" required></textarea></div><button type="submit" class="btn btn-primary w-full">Add Expense</button></form><hr class="my-6 border-border-color"><h3 class="font-semibold text-text-primary mb-4">One-Time Expense History</h3><div class="overflow-y-auto max-h-60"><table id="one-time-expenses-table" class="table w-full text-left text-sm"></table></div></div></div></div>`;
+                this.app.renderRecurringExpenses();
+                this.app.renderOneTimeExpensesTable();
+            }
+            
+            render_salaries() {
+                this.pageTitle.textContent = 'Salaries';
+                this.mainContent.innerHTML = `<div class="page-content card p-6"><h3 class="font-semibold text-text-primary mb-4">Employee Salaries</h3><div class="overflow-x-auto"><table id="salaries-table" class="table w-full text-left text-sm"></table></div></div>`;
+                this.app.renderSalariesTable();
+            }
+
+            render_users() {
+                this.pageTitle.textContent = 'Users';
+                this.mainContent.innerHTML = `<div class="page-content card p-6"><h3 class="font-semibold text-text-primary mb-4">User Management</h3><div class="overflow-x-auto"><table id="users-table" class="table w-full text-left text-sm"></table></div></div>`;
+                this.app.renderUsersTable();
+            }
+            // --- NEW PAGE RENDERERS ---
+            render_delivery() {
+                this.pageTitle.textContent = 'Deliveries';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">Manage Project Deliveries</h3>
+                        <div class="overflow-x-auto mb-6">
+                            <table id="deliveries-table" class="table w-full text-left text-sm"></table>
+                        </div>
+                        <h3 class="font-semibold text-text-primary mb-4">Latest Delivered Projects</h3>
+                        <div id="latest-deliveries-list" class="space-y-4"></div>
+                    </div>
+                `;
+                this.app.renderDeliveriesTable();
+                this.app.renderLatestDeliveries();
+            }
+
+            render_cms() {
+                this.pageTitle.textContent = 'CMS';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">Website Content Management</h3>
+                        <div id="cms-content-list" class="space-y-4">
+                            </div>
+                        <button class="btn btn-primary mt-6" data-action="save-all-cms-changes">
+                            <i class="fas fa-save mr-2"></i>Save All CMS Changes
+                        </button>
+                    </div>
+                `;
+                this.app.renderCmsContent();
+            }
+
+            render_surveys() {
+                this.pageTitle.textContent = 'Surveys';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">Customer Survey Responses</h3>
+                        <div class="overflow-x-auto">
+                            <table id="surveys-table" class="table w-full text-left text-sm"></table>
+                        </div>
+                    </div>
+                `;
+                this.app.renderSurveysTable();
+            }
+
+            render_logs() {
+                this.pageTitle.textContent = 'Logs';
+                this.mainContent.innerHTML = `
+                    <div class="page-content card p-6">
+                        <h3 class="font-semibold text-text-primary mb-4">System Activity Logs</h3>
+                        <div class="overflow-x-auto">
+                            <table id="logs-table" class="table w-full text-left text-sm"></table>
+                        </div>
+                    </div>
+                `;
+                this.app.renderLogsTable();
+            }
+        }
+
+        // Initialize the app when the DOM is fully loaded.
+        document.addEventListener('DOMContentLoaded', () => {
+            window.studioApp = new StudioAdminApp();
+        });
+    </script>
+</body>
+</html>
