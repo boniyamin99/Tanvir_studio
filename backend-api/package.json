@@ -29,7 +29,7 @@
     "pdfkit": "^0.15.0",
     "sequelize": "^6.37.3",
     "socket.io": "^4.7.5",
-    "@google/generative-ai": "^0.14.0"  // Added for AI Lyrics Generator
+    "@google/generative-ai": "^0.14.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
