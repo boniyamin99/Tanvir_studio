@@ -139,13 +139,12 @@
     </div>
 
     <script type="module">
-        // Import your API utility (assuming it's in a 'utils' folder relative to this file's future location)
-        // If this login.html is in the same directory as index.html, and utils is a sibling, adjust path.
-        // For example, if login.html is in 'public/' and utils is in 'public/js/utils/', path might be './js/utils/api.js'
-        // Let's assume login.html is at the root level, and utils is at the root level too for now.
-        import { api } from './utils/api.js'; 
+        // --- Update: Corrected path for importing api utility based on project structure ---
+        // login.html is at /var/www/tanvir_studio_app/
+        // api.js is at /var/www/tanvir_studio_app/backend-api/utils/
+        import { api } from './backend-api/utils/api.js'; 
 
-        // --- THEME TOGGLE SCRIPT (Copied from index.html for consistency) ---
+        // --- THEME TOGGLE SCRIPT (Copied from admin-panel.html for consistency) ---
         const themeToggle = document.getElementById('theme-toggle');
         const themeIcon = document.getElementById('theme-icon');
         const htmlEl = document.documentElement;
