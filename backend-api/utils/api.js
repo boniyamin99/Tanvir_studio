@@ -2,7 +2,7 @@
 // NOTE: This file is typically used as a frontend utility to interact with the backend API.
 // If it resides in your backend-api folder, ensure its purpose is clear within the backend context.
 
-const BASE_URL = 'http://localhost:5000/api'; // Your backend API base URL
+const BASE_URL = 'http://workhurry.com/api'; // Your backend API base URL
 
 /**
  * Core request function that handles all API calls, supporting JSON and FormData (for file uploads).
