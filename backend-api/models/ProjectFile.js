@@ -1,3 +1,5 @@
+// models/ProjectFile.js
+
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const Booking = require('./Booking');
@@ -56,11 +58,11 @@ const ProjectFile = sequelize.define('ProjectFile', {
     timestamps: true // This will add createdAt and updatedAt
 });
 
-// Define associations
-ProjectFile.belongsTo(Booking, { foreignKey: 'bookingId' });
-Booking.hasMany(ProjectFile, { foreignKey: 'bookingId' });
-
-ProjectFile.belongsTo(User, { foreignKey: 'uploaderId', as: 'uploader' });
-User.hasMany(ProjectFile, { foreignKey: 'uploaderId' });
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
+// ProjectFile.belongsTo(Booking, { foreignKey: 'bookingId' });
+// Booking.hasMany(ProjectFile, { foreignKey: 'bookingId' });
+// ProjectFile.belongsTo(User, { foreignKey: 'uploaderId', as: 'uploader' });
+// User.hasMany(ProjectFile, { foreignKey: 'uploaderId' });
 
 module.exports = ProjectFile;
