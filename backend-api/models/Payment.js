@@ -56,8 +56,9 @@ const Payment = sequelize.define('Payment', {
     comment: 'Records individual payment transactions. A booking might have multiple payment entries (e.g., advance, final payment). This model is ideal for detailed financial tracking, separate from Booking.paidAmount which might represent the sum.'
 });
 
-// Define associations
-Payment.belongsTo(Booking, { foreignKey: 'bookingId' });
-Payment.belongsTo(User, { foreignKey: 'payerId', as: 'payer' });
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
+// Payment.belongsTo(Booking, { foreignKey: 'bookingId' });
+// Payment.belongsTo(User, { foreignKey: 'payerId', as: 'payer' });
 
 module.exports = Payment;
