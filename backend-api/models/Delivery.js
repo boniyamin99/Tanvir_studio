@@ -46,6 +46,8 @@ const Delivery = sequelize.define('Delivery', {
     timestamps: true
 });
 
-Delivery.belongsTo(Booking, { foreignKey: 'bookingId' });
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
+// Delivery.belongsTo(Booking, { foreignKey: 'bookingId' });
 
 module.exports = Delivery;
