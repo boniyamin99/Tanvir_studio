@@ -1,3 +1,5 @@
+// models/ProjectMessage.js
+
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const Booking = require('./Booking');
@@ -34,12 +36,11 @@ const ProjectMessage = sequelize.define('ProjectMessage', {
     timestamps: true // This will add createdAt and updatedAt
 });
 
-// Define associations
-ProjectMessage.belongsTo(Booking, { foreignKey: 'bookingId' });
-Booking.hasMany(ProjectMessage, { foreignKey: 'bookingId' });
-
-ProjectMessage.belongsTo(User, { foreignKey: 'senderId', as: 'sender' });
-User.hasMany(ProjectMessage, { foreignKey: 'senderId' });
-
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
+// ProjectMessage.belongsTo(Booking, { foreignKey: 'bookingId' });
+// Booking.hasMany(ProjectMessage, { foreignKey: 'bookingId' });
+// ProjectMessage.belongsTo(User, { foreignKey: 'senderId', as: 'sender' });
+// User.hasMany(ProjectMessage, { foreignKey: 'senderId' });
 
 module.exports = ProjectMessage;
