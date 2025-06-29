@@ -33,21 +33,18 @@ const Booking = sequelize.define('Booking', {
         type: DataTypes.STRING(20),
         allowNull: true
     },
-    // --- Applied Update 10: Clarify serviceType vs. packageName ---
-    // Renamed serviceType to serviceCategory to represent the broad type of service.
-    // Added a new field 'packageName' to hold the specific package chosen (Basic, Standard, Premium).
     serviceCategory: { 
-        type: DataTypes.ENUM('composition', 'mixing', 'mastering', 'production', 'vocal_training', 'other'), // General service categories
-        allowNull: true, // Can be null if packageName covers it entirely
+        type: DataTypes.ENUM('composition', 'mixing', 'mastering', 'production', 'vocal_training', 'other'), 
+        allowNull: true, 
         comment: 'Broad category of service (e.g., composition, mixing)'
     },
     packageName: {
-        type: DataTypes.ENUM('Basic', 'Standard', 'Premium'), // Matches your frontend package names
+        type: DataTypes.ENUM('Basic', 'Standard', 'Premium'), 
         allowNull: false,
         comment: 'Specific package chosen (Basic, Standard, Premium)'
     },
     bookingDate: {
-        type: DataTypes.DATEONLY, // YYYY-MM-DD
+        type: DataTypes.DATEONLY, //YYYY-MM-DD
         allowNull: false
     },
     bookingTime: {
@@ -119,8 +116,7 @@ const Booking = sequelize.define('Booking', {
     }
 });
 
-// Define associations
-Booking.belongsTo(User, { foreignKey: 'userId', as: 'customer' });
-Booking.belongsTo(User, { foreignKey: 'assignedEmployeeId', as: 'assignedEmployee' });
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
 
 module.exports = Booking;
