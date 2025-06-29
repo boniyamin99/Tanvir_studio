@@ -1,3 +1,6 @@
+// models/ActivityLog.js
+
+
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const User = require('./User');
@@ -44,7 +47,8 @@ const ActivityLog = sequelize.define('ActivityLog', {
     updatedAt: false // We only care about when it was created
 });
 
-// Define association
-ActivityLog.belongsTo(User, { foreignKey: 'userId' });
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
+// ActivityLog.belongsTo(User, { foreignKey: 'userId' });
 
 module.exports = ActivityLog;
