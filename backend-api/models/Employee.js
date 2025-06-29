@@ -1,4 +1,4 @@
-const { DataTypes } = require('sequelize');
+Const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const User = require('./User'); // Link to the base User model
 
@@ -50,8 +50,9 @@ const Employee = sequelize.define('Employee', {
     timestamps: true
 });
 
-// Define association
-Employee.belongsTo(User, { foreignKey: 'userId', as: 'userInfo' });
-User.hasOne(Employee, { foreignKey: 'userId', as: 'employeeInfo' });
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
+// Employee.belongsTo(User, { foreignKey: 'userId', as: 'userInfo' });
+// User.hasOne(Employee, { foreignKey: 'userId', as: 'employeeInfo' });
 
 module.exports = Employee;
