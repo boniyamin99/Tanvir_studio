@@ -1,3 +1,5 @@
+// models/SurveyResponse.js
+
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
 const Booking = require('./Booking');
@@ -43,9 +45,10 @@ const SurveyResponse = sequelize.define('SurveyResponse', {
     updatedAt: false
 });
 
-// Define associations
-SurveyResponse.belongsTo(Booking, { foreignKey: 'bookingId' });
-Booking.hasOne(SurveyResponse, { foreignKey: 'bookingId' });
+// Associations are defined centrally in models/index.js
+// So, remove any association definitions from here if they exist.
+// SurveyResponse.belongsTo(Booking, { foreignKey: 'bookingId' });
+// Booking.hasOne(SurveyResponse, { foreignKey: 'bookingId' });
 
 
 module.exports = SurveyResponse;
