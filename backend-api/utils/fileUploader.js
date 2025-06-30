@@ -1,46 +1,43 @@
-// Backend-api/utils/fileUploader.js
+// File: backend-api/utils/fileUploader.js
 
-const aws = require('aws-sdk');
 const multer = require('multer');
-const multerS3 = require('multer-s3');
 const path = require('path');
+// No need for aws-sdk or multerS3 for local storage
 
-// Configure AWS SDK
-aws.config.update({
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-    region: process.env.AWS_S3_REGION
+// Configure disk storage for Multer
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        // Ensure this directory exists on your VPS!
+        // You'll need to create it manually if it doesn't exist.
+        // For example: sudo mkdir -p /var/www/tanvir_studio_app/uploads
+        // sudo chown -R root:root /var/www/tanvir_studio_app/uploads
+        cb(null, '/var/www/tanvir_studio_app/uploads'); // Path to store uploaded files
+    },
+    filename: function (req, file, cb) {
+        // Create a unique filename for the uploaded file
+        cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+    }
 });
-
-const s3 = new aws.S3();
 
 // File type filter to allow only specific file formats
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|pdf|mp3|wav/;
+    const allowedTypes = /jpeg|jpg|png|pdf|mp3|wav|mp4|mov|avi/; // Added video types for general use
     const mimetype = allowedTypes.test(file.mimetype);
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
 
     if (mimetype && extname) {
         return cb(null, true);
     }
-    cb(new Error('Error: File type not allowed! Only images, PDFs, and audio files are permitted.'));
+    cb(new Error('Error: File type not allowed! Only images, PDFs, and audio/video files are permitted.'));
 };
 
 const upload = multer({
-    storage: multerS3({
-        s3: s3,
-        bucket: process.env.AWS_S3_BUCKET_NAME,
-        acl: 'public-read', // Makes uploaded files publicly readable
-        metadata: function (req, file, cb) {
-            cb(null, { fieldName: file.fieldname });
-        },
-        key: function (req, file, cb) {
-            // Creates a unique filename
-            cb(null, 'uploads/' + Date.now().toString() + path.extname(file.originalname));
-        }
-    }),
+    storage: storage, // Using disk storage now
     limits: { fileSize: 50 * 1024 * 1024 }, // 50MB file size limit
     fileFilter: fileFilter
 });
+
+// No need for a deleteFile function here, as local file deletion needs more careful handling
+// and is typically done using Node.js's 'fs' module in a controller if needed.
 
 module.exports = upload;
