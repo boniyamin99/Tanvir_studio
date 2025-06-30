@@ -12,7 +12,7 @@ const Delivery = require('./Delivery');
 const ActivityLog = require('./ActivityLog');       
 const FormField = require('./FormField');           
 const ProjectMessage = require('./ProjectMessage'); 
-const ProjectFile = require('./ProjectFile');
+const ProjectFile = require('./ProjectFile');       
 const SurveyResponse = require('./SurveyResponse'); 
 
 
@@ -20,7 +20,7 @@ const SurveyResponse = require('./SurveyResponse');
 // =========================================================================
 
 // User - Booking Associations
-User.hasMany(Booking, { foreignKey: 'userId', as: 'customerBookings' });
+User.hasMany(Booking, { foreignKey: 'userId', as: 'customerMadeBookings' }); // Changed alias
 Booking.belongsTo(User, { foreignKey: 'userId', as: 'customer' });
 
 // User - Employee Associations
@@ -28,7 +28,7 @@ User.hasOne(Employee, { foreignKey: 'userId', as: 'employeeInfo' });
 Employee.belongsTo(User, { foreignKey: 'userId', as: 'userInfo' });
 
 // Booking - Employee (assigned) Associations
-User.hasMany(Booking, { foreignKey: 'assignedEmployeeId', as: 'assignedBookings' });
+User.hasMany(Booking, { foreignKey: 'assignedEmployeeId', as: 'employeeAssignedBookings' }); // Changed alias
 Booking.belongsTo(User, { foreignKey: 'assignedEmployeeId', as: 'assignedEmployee' });
 
 // Booking - Payment Associations
@@ -40,19 +40,16 @@ Booking.hasOne(Delivery, { foreignKey: 'bookingId', as: 'delivery' });
 Delivery.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' });
 
 // Expense - User (recordedBy) Association
-// This allows you to know which user/employee recorded which expense
 User.hasMany(Expense, { foreignKey: 'recordedBy', as: 'recordedExpenses' });
 Expense.belongsTo(User, { foreignKey: 'recordedBy', as: 'recorder' });
 
 // ActivityLog - User Association
-// To link an activity log entry to the user who performed the action
 User.hasMany(ActivityLog, { foreignKey: 'userId', as: 'activityLogs' });
 ActivityLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 // Booking - ProjectMessage Association (for project-specific chat/communication)
 Booking.hasMany(ProjectMessage, { foreignKey: 'bookingId', as: 'projectMessages' });
 ProjectMessage.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' });
-// Assuming ProjectMessage can be sent by a User (client or employee)
 User.hasMany(ProjectMessage, { foreignKey: 'senderId', as: 'sentMessages' });
 ProjectMessage.belongsTo(User, { foreignKey: 'senderId', as: 'sender' });
 
@@ -60,7 +57,6 @@ ProjectMessage.belongsTo(User, { foreignKey: 'senderId', as: 'sender' });
 // Booking - ProjectFile Association (for project-specific file sharing)
 Booking.hasMany(ProjectFile, { foreignKey: 'bookingId', as: 'projectFiles' });
 ProjectFile.belongsTo(Booking, { foreignKey: 'bookingId', as: 'booking' });
-// Assuming ProjectFile can be uploaded by a User (client or employee)
 User.hasMany(ProjectFile, { foreignKey: 'uploaderId', as: 'uploadedFiles' });
 ProjectFile.belongsTo(User, { foreignKey: 'uploaderId', as: 'uploader' });
 
