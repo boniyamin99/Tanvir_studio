@@ -4,9 +4,9 @@ const PDFDocument = require('pdfkit');
 const { Booking, User } = require('../models');
 const { logActivity } = require('../utils/activityLogger'); // Added for logging unauthorized access
 
-// @desc    Generate and download a PDF invoice for a booking
-// @route   GET /api/invoices/:bookingId or /api/bookings/:id/invoice
-// @access  Private (admin, customer who owns the booking)
+// @desc Generate and download a PDF invoice for a booking
+// @route GET /api/invoices/:bookingId or /api/bookings/:id/invoice
+// @access Private (admin, customer who owns the booking)
 const downloadInvoice = async (req, res) => {
     try {
         const bookingId = req.params.bookingId || req.params.id;
@@ -17,11 +17,8 @@ const downloadInvoice = async (req, res) => {
         if (!booking) {
             return res.status(404).json({ message: 'Booking not found.' });
         }
-        
-        // --- Applied Update 6: Authorize customer to only download their own invoice ---
-        // This is crucial for security and data privacy.
-        // If a customer tries to download an invoice for another customer's booking, this will prevent it.
-        // Admins, managers, and accountants can download any invoice.
+
+        // Authorize customer to only download their own invoice
         if (req.user && req.user.role === 'customer' && booking.userId !== req.user.id) {
             await logActivity(req.user.id, 'UNAUTHORIZED_INVOICE_ACCESS_ATTEMPT', `Customer tried to download invoice for booking ID ${bookingId} (not owned).`, {
                 targetId: bookingId,
@@ -73,13 +70,13 @@ const downloadInvoice = async (req, res) => {
         doc.text(`৳${booking.totalAmount.toLocaleString()}`, 450, 330, { width: 100, align: 'right' });
         doc.moveDown(2);
         doc.lineCap('butt').moveTo(50, 350).lineTo(550, 350).stroke();
-        
+
         // Summary
         const summaryY = 370;
         doc.font('Helvetica-Bold');
         doc.text('Total Amount:', 350, summaryY);
         doc.text(`৳${booking.totalAmount.toLocaleString()}`, 450, summaryY, { width: 100, align: 'right' });
-        
+
         doc.font('Helvetica');
         doc.text('Amount Paid:', 350, summaryY + 20);
         doc.text(`৳${booking.paidAmount.toLocaleString()}`, 450, summaryY + 20, { width: 100, align: 'right' });
