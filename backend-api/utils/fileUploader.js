@@ -7,11 +7,11 @@ const path = require('path');
 // Configure disk storage for Multer
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Ensure this directory exists on your VPS!
-        // You'll need to create it manually if it doesn't exist.
-        // For example: sudo mkdir -p /var/www/tanvir_studio_app/uploads
-        // sudo chown -R root:root /var/www/tanvir_studio_app/uploads
-        cb(null, '/var/www/tanvir_studio_app/uploads'); // Path to store uploaded files
+        // Files will be stored in public_html/backend-api/uploads inside cPanel
+        // Ensure this directory exists on your hosting environment!
+        // You might need to create it manually via cPanel File Manager or SSH.
+        // For example, in public_html/backend-api/uploads
+        cb(null, 'uploads'); // Relative path from server.js to uploads folder
     },
     filename: function (req, file, cb) {
         // Create a unique filename for the uploaded file
@@ -21,7 +21,7 @@ const storage = multer.diskStorage({
 
 // File type filter to allow only specific file formats
 const fileFilter = (req, file, cb) => {
-    const allowedTypes = /jpeg|jpg|png|pdf|mp3|wav|mp4|mov|avi/; // Added video types for general use
+    const allowedTypes = /jpeg|jpg|png|pdf|mp3|wav|mp4|mov|avi/; // Allowed image, document, and media types
     const mimetype = allowedTypes.test(file.mimetype);
     const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
 
