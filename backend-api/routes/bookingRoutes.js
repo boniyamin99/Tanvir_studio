@@ -8,7 +8,6 @@ const {
     updateBookingStatus,
     assignEmployeeToBooking,
     deleteBooking,
-    // addPaymentToBooking, // Temporarily removed from here until implemented in controller
 } = require('../controllers/bookingController');
 
 // Import the downloadInvoice from InvoiceController, as it's defined there
@@ -19,7 +18,6 @@ const { protect, authorizeRoles } = require('../middleware/authMiddleware');
 const router = express.Router();
 
 // Public route for creating initial booking from the frontend (index.html)
-// This route is specifically used by your updated index.html for booking submissions.
 router.route('/')
     .post(createBooking); 
 
@@ -27,8 +25,7 @@ router.route('/')
 router.route('/')
     .get(protect, authorizeRoles('admin', 'manager', 'accountant'), getAllBookings);
 
-// Route for downloading an invoice for a booking (Feature #2)
-// Now using the controller from InvoiceController.js
+// Route for downloading an invoice for a booking
 router.route('/:id/invoice')
     .get(protect, authorizeRoles('admin', 'manager', 'customer'), downloadInvoice);
 
@@ -40,11 +37,11 @@ router.route('/:id/invoice')
 
 router.route('/:id')
     .get(protect, authorizeRoles('admin', 'manager', 'accountant', 'customer'), getBookingById)
-    .delete(protect, authorizeRoles('admin'), deleteBooking); // Only admin can delete
+    .delete(protect, authorizeRoles('admin'), deleteBooking); 
 
 router.route('/:id/status')
     .put(protect, authorizeRoles('admin', 'manager'), updateBookingStatus);
-    
+
 router.route('/:id/assign')
     .put(protect, authorizeRoles('admin', 'manager'), assignEmployeeToBooking);
 
