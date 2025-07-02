@@ -139,9 +139,9 @@
     </div>
 
     <script type="module">
-        // --- Update: Corrected path for importing api utility based on project structure ---
-        // login.html is at /var/www/tanvir_studio_app/
-        // api.js is at /var/www/tanvir_studio_app/backend-api/utils/
+        // --- Corrected path for importing api utility based on project structure for cPanel ---
+        // login.html is at public_html/
+        // api.js is at public_html/backend-api/utils/
         import { api } from './backend-api/utils/api.js'; 
 
         // --- THEME TOGGLE SCRIPT (Copied from admin-panel.html for consistency) ---
@@ -151,7 +151,7 @@
         const savedTheme = localStorage.getItem('theme') || 'light';
         htmlEl.classList.toggle('dark', savedTheme === 'dark');
         themeIcon.classList.toggle('fa-sun', savedTheme === 'dark');
-        themeIcon.classList.toggle('fa-moon', savedTheme === 'light');
+        themeIcon.classList.toggle('fa-moon', !isDark);
 
         themeToggle.addEventListener('click', () => {
             const isDark = htmlEl.classList.toggle('dark');
